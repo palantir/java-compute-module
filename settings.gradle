@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'java-compute-module'
+
+include 'lib'
+
