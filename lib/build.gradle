@@ -1,0 +1,8 @@
+dependencies {
+    implementation 'com.google.guava:guava'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+    implementation 'com.palantir.safe-logging:logger'
+    implementation 'com.palantir.safe-logging:preconditions'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
