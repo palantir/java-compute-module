@@ -1,0 +1,109 @@
+
+version: 2.1
+aliases:
+  - &check-no-files-changed
+    run:
+      name: Check that no git-tracked files were modified
+      command: |
+        FILES_MODIFIED="$(git status --porcelain)"
+        if [[ -n "$FILES_MODIFIED" ]]; then
+          echo "The following files were modified or added during the build process:"
+          echo "$FILES_MODIFIED"
+          echo "This will likely prevent successful publishing. Please run the build locally and include these changes in your pull request. (If new files are created, consider whether they should be checked in or .gitignored.)"
+          exit 1
+        fi
+
+jobs:
+
+  check:
+    docker: [{ image: 'cimg/openjdk:11.0.22-node' }]
+    resource_class: large
+    environment:
+      JAVA_HOME: /opt/java17
+      GRADLE_OPTS: -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs='-Xmx2147483648 --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=4 -XX:MaxRAM=8g -XX:+CrashOnOutOfMemoryError -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
+      DOCKER_BUILDKIT: 1
+      CIRCLE_TEST_REPORTS: /home/circleci/junit
+      CIRCLE_ARTIFACTS: /home/circleci/artifacts
+    parallelism: 1
+    steps:
+      - checkout
+      - run: delete_unrelated_tags
+      - cache/restore: { keys: 'gradle-wrapper-v1-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
+      - cache/restore: { keys: 'check-gradle-cache-v1-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}' }
+      - run:
+          command: monitor_all_processes
+          name: Monitor all processes, saving a log file to the artifacts directory. Use https://pl.ntr/monitorallprocessesvisualizer to analyze it.
+          background: true
+      - run:
+          command: ./gradlew --parallel --stacktrace --continue --max-workers=2 build -Porg.gradle.java.installations.fromEnv=JAVA_11_HOME,JAVA_17_HOME,JAVA_21_HOME,JAVA_HOME
+          no_output_timeout: 30m
+      - *check-no-files-changed
+      - persist_to_workspace:
+          root: /home/circleci
+          paths: [ project ]
+      - cache/save:
+          key: 'gradle-wrapper-v1-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}'
+          paths: ~/.gradle/wrapper
+      - cache/save:
+          key: 'check-gradle-cache-v1-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}'
+          paths: ~/.gradle/caches
+      - run:
+          command: mkdir -p ~/junit && find . -type f -regex ".*/build/.*TEST.*xml" -exec cp --parents {} ~/junit/ \;
+          when: always
+      - store_test_results: { path: ~/junit }
+      - store_artifacts: { path: ~/artifacts }
+
+
+  publish:
+    docker: [{ image: 'cimg/openjdk:11.0.22-node' }]
+    resource_class: medium
+    environment:
+      JAVA_HOME: /opt/java17
+      GRADLE_OPTS: -Dorg.gradle.workers.max=1 -Dorg.gradle.jvmargs='-Xmx2147483648 --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED'
+      _JAVA_OPTIONS: -XX:ActiveProcessorCount=2 -XX:MaxRAM=4g -XX:+CrashOnOutOfMemoryError -XX:ErrorFile=/home/circleci/artifacts/hs_err_pid%p.log -XX:HeapDumpPath=/home/circleci/artifacts
+      DOCKER_BUILDKIT: 1
+      CIRCLE_TEST_REPORTS: /home/circleci/junit
+      CIRCLE_ARTIFACTS: /home/circleci/artifacts
+    steps:
+      - attach_workspace: { at: /home/circleci }
+      - cache/restore: { keys: 'gradle-wrapper-v1-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
+      - cache/restore: { keys: 'publish-gradle-cache-v1-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}' }
+      - secret-injector/check
+      - run:
+          command: monitor_all_processes
+          name: Monitor all processes, saving a log file to the artifacts directory. Use https://pl.ntr/monitorallprocessesvisualizer to analyze it.
+          background: true
+      - deploy:
+          command: ./gradlew --parallel --stacktrace --continue publish -Porg.gradle.java.installations.fromEnv=JAVA_11_HOME,JAVA_17_HOME,JAVA_21_HOME,JAVA_HOME
+          no_output_timeout: 30m
+      - run:
+          command: git status --porcelain
+          when: always
+      - cache/save:
+          key: 'publish-gradle-cache-v1-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}'
+          paths: ~/.gradle/caches
+      - store_test_results: { path: ~/junit }
+      - store_artifacts: { path: ~/artifacts }
+
+  circle-all:
+    docker: [{ image: 'busybox:1.36.1@sha256:6d9ac9237a84afe1516540f40a0fafdc86859b2141954b4d643af7066d598b74' }]
+    resource_class: small
+    steps:
+      - run: {command: echo "All required jobs finished successfully"}
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - check:
+          filters: { tags: { only: /.*/ } }
+
+      # Catch-all for all required checks
+      - circle-all:
+          requires: [ check ]
+          filters: { tags: { only: /.*/ } }
+
+      - publish:
+          requires: [ circle-all ]
+          filters: { tags: { only: /.*/ }, branches: { only: develop } }
