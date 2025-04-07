@@ -15,4 +15,5 @@
  */
 package com.palantir.computemodules.functions.results;
 
+@Unsafe
 public record Failed(String jobId, Exception e) implements Result {}
