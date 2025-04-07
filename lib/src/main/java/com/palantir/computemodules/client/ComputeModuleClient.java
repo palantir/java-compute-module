@@ -46,8 +46,7 @@ public final class ComputeModuleClient implements Client {
         this.postRequest = HttpRequest.newBuilder()
                 .header("Module-Auth-Token", moduleAuthToken)
                 .header("Content-Type", "application/octet-stream");
-        this.client = HttpClient.newBuilder()
-                .build();
+        this.client = HttpClient.newBuilder().build();
     }
 
     @Override
