@@ -74,8 +74,12 @@ public final class ComputeModule {
                             @Override
                             public void onSuccess(Result result) {
                                 switch (result) {
-                                    case Ok ok -> client.postResult(ok.jobId(), ok.result());
-                                    case Failed failed -> client.postResult(failed.jobId(), serializeException(failed));
+                                    case Ok ok:
+                                        client.postResult(ok.jobId(), ok.result());
+                                        break;
+                                    case Failed failed:
+                                        client.postResult(failed.jobId(), serializeException(failed));
+                                        break;
                                 }
                             }
 
