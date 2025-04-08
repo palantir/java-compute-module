@@ -15,5 +15,4 @@
  */
 package com.palantir.computemodules.client;
 
-public record ComputeModuleJob(String jobId, String queryType, Object query) {
-}
+public record ComputeModuleJob(String jobId, String queryType, Object query) {}

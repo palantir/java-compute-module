@@ -106,7 +106,7 @@ public final class ComputeModule {
     private InputStream serializeException(Failed failed) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintWriter pw =
-                     new PrintWriter(new BufferedWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8)))) {
+                new PrintWriter(new BufferedWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8)))) {
             pw.println("JobId: " + failed.jobId());
             failed.e().printStackTrace(pw);
         } catch (Exception e) {
