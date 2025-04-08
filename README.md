@@ -47,8 +47,8 @@ dependencies {
     implementation 'com.palantir.safe-logging:safe-logging:3.7.0'
     implementation 'org.slf4j:slf4j-api:1.7.36'
     
-    // includes java-compute-module
-    implementation 'com.palantir.computemodules:java-compute-module:0.0.0'
+    // includes java-compute-module lib
+    implementation 'com.palantir.computemodules:lib:0.1.0'
     
     // Jackson for JSON manipulation
     implementation 'com.fasterxml.jackson.core:jackson-core:2.18.2'
@@ -75,16 +75,14 @@ application {
 Within the generated src/main/java folder, create (or update) a class named App. Below is a simple example:
 
 ```java
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.palantir.computemodule.ComputeModule;
-import com.palantir.computemodule.Context;
+import com.palantir.computemodules.functions.Context;
+import com.palantir.computemodules.ComputeModule;
 
 public class App {
 
     public static void main(String[] args) {
 
-        ComputeModule cm = ComputeModule.builder()
+        ComputeModule.builder()
                 .add(App::hello, String.class, String.class, "hello")
                 .build()
                 .start();
