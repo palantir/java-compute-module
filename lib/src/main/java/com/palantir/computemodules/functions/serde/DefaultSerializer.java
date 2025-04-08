@@ -20,11 +20,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palantir.computemodules.functions.results.Failed;
 import com.palantir.computemodules.functions.results.Ok;
 import com.palantir.computemodules.functions.results.Result;
+import com.palantir.logsafe.Unsafe;
 import java.io.ByteArrayInputStream;
 
 public final class DefaultSerializer<O> implements Serializer<O> {
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    @Unsafe
     @Override
     public Result serialize(String jobId, O output) {
         try {
