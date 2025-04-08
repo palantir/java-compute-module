@@ -20,8 +20,8 @@ aliases:
 jobs:
 
   check:
-    docker: [{ image: 'cimg/openjdk:21.0.2-node' }]
-    resource_class: large
+    machine:
+      docker_layer_caching: true
     environment:
       CIRCLE_TEST_REPORTS: /home/circleci/junit
       CIRCLE_ARTIFACTS: /home/circleci/artifacts
@@ -61,7 +61,7 @@ jobs:
             if [ -x .circleci/check-setup.sh ]; then
                 echo "Running check-setup" && .circleci/check-setup.sh && echo "check-setup complete"
             fi
-      - run: ./gradlew --parallel --stacktrace --continue --max-workers=2 build -Porg.gradle.java.installations.fromEnv=JAVA_11_HOME,JAVA_17_HOME,JAVA_21_HOME,JAVA_HOME
+      - run: ./gradlew --parallel --stacktrace --continue --max-workers=2 check -Porg.gradle.java.installations.fromEnv=JAVA_11_HOME,JAVA_17_HOME,JAVA_21_HOME,JAVA_HOME
       - *check-no-files-changed
       - persist_to_workspace:
           root: /home/circleci
@@ -78,8 +78,36 @@ jobs:
       - store_test_results: { path: ~/junit }
       - store_artifacts: { path: ~/artifacts }
 
+  build:
+    machine:
+      docker_layer_caching: true
+    environment:
+      CIRCLE_TEST_REPORTS: /home/circleci/junit
+      CIRCLE_ARTIFACTS: /home/circleci/artifacts
+      _JAVA_OPTIONS: -Dorg.gradle.internal.launcher.welcomeMessageEnabled=false -Xmx8192m
+    steps:
+      - checkout
+      - restore_cache: { key: 'gradle-wrapper-v1-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}' }
+      - restore_cache: { key: 'build-gradle-cache-v1-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}' }
+      - run:
+          name: build-setup
+          command: |
+            if [ -x .circleci/build-setup.sh ]; then
+                echo "Running build-setup" && .circleci/build-setup.sh && echo "build-setup complete"
+            fi
+      - run: ./gradlew --parallel --stacktrace build -x test -x check -Porg.gradle.java.installations.fromEnv=JAVA_11_HOME,JAVA_17_HOME,JAVA_21_HOME,JAVA_HOME
+      - *check-no-files-changed
+      - save_cache:
+          key: 'build-gradle-cache-v1-{{ checksum "versions.props" }}-{{ checksum "build.gradle" }}'
+          paths: [ ~/.gradle/caches ]
+      - run:
+          command: mkdir -p ~/junit && find . -type f -regex ".*/build/.*TEST.*xml" -exec cp --parents {} ~/junit/ \; || true
+          when: always
+      - store_test_results: { path: ~/junit }
+      - store_artifacts: { path: ~/artifacts }
+
   publish:
-    docker: [{ image: '' }]
+    docker: [{ image: 'cimg/openjdk:21.0.2-node' }]
     resource_class: medium
     environment:
       CIRCLE_TEST_REPORTS: /home/circleci/junit
@@ -114,8 +142,11 @@ workflows:
       - check:
           filters: { tags: { only: /.*/ } }
 
+      - build:
+          filters: { tags: { only: /.*/ } }
+
       - circle-all:
-          requires: [ check ]
+          requires: [ check, build ]
           filters: { tags: { only: /.*/ } }
 
       - publish:
