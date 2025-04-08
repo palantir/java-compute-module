@@ -48,7 +48,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.36'
     
     // includes java-compute-module lib
-    implementation 'com.palantir.computemodules:lib:0.0.1'
+    implementation 'com.palantir.computemodules:lib:0.1.0'
     
     // Jackson for JSON manipulation
     implementation 'com.fasterxml.jackson.core:jackson-core:2.18.2'
