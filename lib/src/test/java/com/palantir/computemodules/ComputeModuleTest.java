@@ -15,7 +15,7 @@
  */
 package com.palantir.computemodules;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -54,23 +54,23 @@ class ComputeModuleTest {
         Integer result3 = testClient.result(job3, Integer.class);
         String result1 = testClient.result(job1, String.class);
 
-        assertEquals(result1, "hello Compute Module");
-        assertEquals(result2, 4);
-        assertEquals(result3, 20);
+        assertThat("hello Compute Module").isEqualTo(result1);
+        assertThat(4).isEqualTo(result2);
+        assertThat(20).isEqualTo(result3);
     }
 
     @Test
     void test_invalid_function_name() throws IOException {
         InputStream result = testClient.execute("doesn't exist", 2);
         String error = new String(result.readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(error.contains("Requested function not found"), true);
+        assertThat(true).isEqualTo(error.contains("Requested function not found"));
     }
 
     @Test
     void test_user_function_that_throws() throws IOException {
         InputStream result = testClient.execute("error", 2);
         String error = new String(result.readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(error.contains("Intentionally throwing: 2"), true);
+        assertThat(true).isEqualTo(error.contains("Intentionally throwing: 2"));
     }
 
     static Integer dub(Context context, Integer input) {
