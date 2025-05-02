@@ -20,6 +20,7 @@ import com.palantir.computemodules.functions.results.Ok;
 import com.palantir.computemodules.functions.results.Result;
 import com.palantir.computemodules.functions.serde.Deserializer;
 import com.palantir.computemodules.functions.serde.Serializer;
+import com.palantir.logsafe.Unsafe;
 import java.io.InputStream;
 
 public final class FunctionRunner<I, O> {
@@ -42,7 +43,7 @@ public final class FunctionRunner<I, O> {
         this.serializer = serializer;
     }
 
-    public Result run(Context context, Object input) {
+    @Unsafe public Result run(Context context, Object input) {
         I deserializedInput = deserializer.deserialize(input, inputType);
         try {
             O result = function.run(context, deserializedInput);
