@@ -91,7 +91,8 @@ public final class ComputeModule {
         }
     }
 
-    @Unsafe private Result execute(ComputeModuleJob job) {
+    @Unsafe
+    private Result execute(ComputeModuleJob job) {
         if (functions.containsKey(job.queryType())) {
             return functions.get(job.queryType()).run(new Context(job.jobId()), job.query());
         } else {
