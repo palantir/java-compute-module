@@ -32,6 +32,7 @@ import com.palantir.computemodules.functions.results.Result;
 import com.palantir.computemodules.functions.serde.DefaultDeserializer;
 import com.palantir.computemodules.functions.serde.DefaultSerializer;
 import com.palantir.logsafe.SafeArg;
+import com.palantir.logsafe.Unsafe;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import com.palantir.logsafe.logger.SafeLogger;
 import com.palantir.logsafe.logger.SafeLoggerFactory;
@@ -90,6 +91,7 @@ public final class ComputeModule {
         }
     }
 
+    @Unsafe
     private Result execute(ComputeModuleJob job) {
         if (functions.containsKey(job.queryType())) {
             return functions.get(job.queryType()).run(new Context(job.jobId()), job.query());

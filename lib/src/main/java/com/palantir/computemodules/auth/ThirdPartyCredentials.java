@@ -16,22 +16,4 @@
 
 package com.palantir.computemodules.auth;
 
-import java.util.Optional;
-
-public final class ThirdPartyCredentials {
-    private final String clientId;
-    private final String clientSecret;
-
-    public ThirdPartyCredentials(String clientId, String clientSecret) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-    }
-
-    public Optional<String> clientId() {
-        return Optional.ofNullable(clientId);
-    }
-
-    public Optional<String> clientSecret() {
-        return Optional.ofNullable(clientSecret);
-    }
-}
+public record ThirdPartyCredentials(String clientId, String clientSecret) {}

@@ -15,4 +15,7 @@
  */
 package com.palantir.computemodules.functions.results;
 
+import com.palantir.logsafe.Unsafe;
+
+@Unsafe
 public sealed interface Result permits Ok, Failed {}

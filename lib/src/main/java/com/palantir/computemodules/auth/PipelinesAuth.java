@@ -16,23 +16,19 @@
 
 package com.palantir.computemodules.auth;
 
-import com.palantir.logsafe.logger.SafeLogger;
-import com.palantir.logsafe.logger.SafeLoggerFactory;
-import java.util.Optional;
+import com.palantir.logsafe.exceptions.SafeRuntimeException;
 
 public final class PipelinesAuth {
     private PipelinesAuth() {}
 
-    private static final SafeLogger log = SafeLoggerFactory.get(PipelinesAuth.class);
-
     // Produces a bearer token that can be used to make calls to access pipeline resources.
     // This is only available in pipeline mode.
-    public static Optional<String> retrievePipelineToken() {
+    public static String retrievePipelineToken() {
         String token = System.getenv("BUILD2_TOKEN");
         if (token == null || token.isEmpty()) {
-            log.error("BUILD2_TOKEN environment variable not set");
-            return Optional.empty();
+            throw new SafeRuntimeException(
+                    "Pipeline token not available. Please make sure you are running in Pipeline mode.");
         }
-        return Optional.of(token);
+        return token;
     }
 }

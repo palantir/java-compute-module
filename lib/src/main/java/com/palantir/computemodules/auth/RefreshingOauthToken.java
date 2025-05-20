@@ -16,14 +16,12 @@
 
 package com.palantir.computemodules.auth;
 
-import com.palantir.logsafe.Unsafe;
+import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import com.palantir.logsafe.logger.SafeLogger;
 import com.palantir.logsafe.logger.SafeLoggerFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class RefreshingOauthToken {
 
@@ -34,7 +32,7 @@ public final class RefreshingOauthToken {
     private final List<String> scope;
     private final Duration refreshInterval;
 
-    private final AtomicReference<String> token = new AtomicReference<>(null);
+    private String token = "";
     private volatile Instant lastRefreshTime = Instant.EPOCH;
 
     public RefreshingOauthToken(String hostname, List<String> scope, Duration refreshInterval) {
@@ -47,24 +45,21 @@ public final class RefreshingOauthToken {
         this(hostname, scope, DEFAULT_REFRESH_INTERVAL);
     }
 
-    public Optional<String> getToken() {
-        String currentToken = token.get();
-        if (currentToken == null
+    public String getToken() {
+        if (this.token.isEmpty()
                 || Duration.between(lastRefreshTime, Instant.now()).compareTo(refreshInterval) > 0) {
-            Optional<String> newToken = fetchToken();
+            String newToken = fetchToken();
             if (newToken.isEmpty()) {
-                log.error("Unable to refresh token.");
-                return Optional.empty();
+                throw new SafeRuntimeException("Failed to refresh token");
             }
 
-            token.set(newToken.get());
+            this.token = newToken;
             lastRefreshTime = Instant.now();
         }
-        return Optional.ofNullable(token.get());
+        return this.token;
     }
 
-    @Unsafe
-    private Optional<String> fetchToken() {
-        return ThirdPartyAuth.fetchOAuthToken(hostname, scope);
+    private String fetchToken() {
+        return ThirdPartyAuth.fetchOAuthToken(this.hostname, this.scope);
     }
 }
