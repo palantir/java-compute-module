@@ -18,49 +18,20 @@ package com.palantir.computemodules.auth;
 
 import java.util.Optional;
 
-public class ClientCredentials {
+public final class ThirdPartyCredentials {
     private final String clientId;
     private final String clientSecret;
 
-    public final class ThirdPartyCredentials {
-        private final String clientId;
-        private final String clientSecret;
+    public ThirdPartyCredentials(String clientId, String clientSecret) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+    }
 
-        private ThirdPartyCredentials(Builder builder) {
-            this.clientId = builder.clientId;
-            this.clientSecret = builder.clientSecret;
-        }
+    public Optional<String> clientId() {
+        return Optional.ofNullable(clientId);
+    }
 
-        public Optional<String> getClientId() {
-            return Optional.ofNullable(clientId);
-        }
-
-        public Optional<String> getClientSecret() {
-            return Optional.ofNullable(clientSecret);
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static final class Builder {
-            private String clientId;
-            private String clientSecret;
-
-            private Builder() {}
-
-            public Builder clientId(String clientId) {
-                this.clientId = clientId;
-                return this;
-            }
-
-            public Builder clientSecret(String clientSecret) {
-                this.clientSecret = clientSecret;
-                return this;
-            }
-
-            public ThirdPartyCredentials build() {
-                return new ThirdPartyCredentials(this);
-            }
-        }
+    public Optional<String> clientSecret() {
+        return Optional.ofNullable(clientSecret);
+    }
 }
