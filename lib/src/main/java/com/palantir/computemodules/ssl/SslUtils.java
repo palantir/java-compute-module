@@ -25,7 +25,7 @@ import java.security.cert.CertificateFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-public class SslUtils {
+public final class SslUtils {
     private SslUtils() {}
 
     public static SSLContext createSslContext(String caPath) {
