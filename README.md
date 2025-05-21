@@ -110,8 +110,38 @@ public class App {
    - When the application launches, the compute module is started by invoking the `.start()` method.
    - This initiates the module and makes the registered functions, like `hello`, available for execution.
 ---
+### 4. Auth and Credentials
+To obtain an auth token for interacting with Foundry resources in Pipeline mode use the following function:
 
-### 4. Build and Deploy with Docker
+```java
+import com.palantir.computemodules.auth.PipelinesAuth;
+
+String token = PipelinesAuth.retrievePipelineToken();
+```
+
+If you have configured your Compute Module (CM) to use Application's permissions, your application will use a service user for permissions instead of relying on the user's permissions. This configuration requires you to obtain the client ID and credentials to grant permission to the service token. This library facilitates this process:
+```java
+import com.palantir.computemodules.auth.ThirdPartyAuth;
+
+ThirdPartyCredentials credentials = ThirdPartyAuth.retrieveThirdPartyIdAndCreds();
+
+// get a scoped token for your 3pa
+String HOSTNAME = "myenvironment.palantirfoundry.com"
+String token = ThirdPartyAuth.fetchOAuthToken(HOSTNAME, ["api:datasets-read"]);
+```
+
+For usecases where you require the token to automatically refresh after expiry, you can utilize the RefreshingOauthToken class. By default, a token refresh will be triggered after 30 minutes. When using this class, you should ensure to only retrieve and generate tokens through the get_token() function.
+```java
+import com.palantir.computemodules.auth.RefreshingOauthToken;
+
+RefreshingOauthToken refreshingToken = new RefreshingOauthToken(HOSTNAME, ["api:datasets-read"]);
+
+// Token will automatically refresh when beyond expiry period
+String token = refreshingToken.getToken();
+```
+---
+
+### 5. Build and Deploy with Docker
 
 Containerize your application and then upload the resulting Docker image to Foundry. Once uploaded, you can reference your newly created image in a compute module. Example of Dockerfile:
 

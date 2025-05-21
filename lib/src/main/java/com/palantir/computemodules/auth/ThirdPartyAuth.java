@@ -17,6 +17,7 @@ package com.palantir.computemodules.auth;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palantir.computemodules.ssl.SslUtils;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import java.io.IOException;
 import java.net.URI;
@@ -42,8 +43,9 @@ public final class ThirdPartyAuth {
         String clientId = System.getenv("CLIENT_ID");
         String clientSecret = System.getenv("CLIENT_SECRET");
         if (clientId.isEmpty() || clientSecret.isEmpty()) {
-            throw new SafeRuntimeException("Required environment variables not found: CLIENT_ID, CLIENT_SECRET. "
-                    + "Make sure that your CM has Application permissions enabled.");
+            throw new SafeRuntimeException(
+                    "One or both of required environment variables not found: CLIENT_ID, CLIENT_SECRET. "
+                            + "Make sure that your CM has Application permissions enabled.");
         }
         return new ThirdPartyCredentials(clientId, clientSecret);
     }
@@ -59,7 +61,7 @@ public final class ThirdPartyAuth {
 
             String url = HTTPS + hostname + OAUTH_TOKEN_ENDPOINT;
 
-            SSLContext sslContext = SslContext.createSslContext(System.getenv("DEFAULT_CA_PATH"));
+            SSLContext sslContext = SslUtils.createSslContext(System.getenv("DEFAULT_CA_PATH"));
 
             HttpClient client = HttpClient.newBuilder().sslContext(sslContext).build();
             HttpRequest request = HttpRequest.newBuilder()
