@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2024 Palantir Technologies Inc. All rights reserved.
+ * (c) Copyright 2025 Palantir Technologies Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.palantir.computemodules.functions.results;
 
-import com.palantir.logsafe.Unsafe;
+package com.palantir.computemodules.auth;
 
-@Unsafe
-public sealed interface Result permits Ok, Failed {}
+public record ThirdPartyCredentials(String clientId, String clientSecret) {}
