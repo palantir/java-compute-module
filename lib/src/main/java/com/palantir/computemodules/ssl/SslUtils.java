@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.palantir.computemodules.auth;
+package com.palantir.computemodules.ssl;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -25,10 +25,10 @@ import java.security.cert.CertificateFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-final class SslContext {
+public class SslContext {
     private SslContext() {}
 
-    static SSLContext createSslContext(String caPath) {
+    public static SSLContext createSslContext(String caPath) {
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(null, null);
