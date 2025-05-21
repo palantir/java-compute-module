@@ -17,6 +17,10 @@
 package com.palantir.computemodules.auth;
 
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public final class PipelinesAuth {
     private PipelinesAuth() {}
@@ -24,11 +28,16 @@ public final class PipelinesAuth {
     // Produces a bearer token that can be used to make calls to access pipeline resources.
     // This is only available in pipeline mode.
     public static String retrievePipelineToken() {
-        String token = System.getenv("BUILD2_TOKEN");
-        if (token == null || token.isEmpty()) {
+        String tokenFilePath = System.getenv("BUILD2_TOKEN");
+        if (tokenFilePath == null || tokenFilePath.isEmpty()) {
             throw new SafeRuntimeException(
                     "Pipeline token not available. Please make sure you are running in Pipeline mode.");
         }
-        return token;
+        try {
+            return Files.readString(Paths.get(tokenFilePath), StandardCharsets.UTF_8)
+                    .trim();
+        } catch (IOException e) {
+            throw new SafeRuntimeException("Failed to read pipeline token from file where it is stored.", e);
+        }
     }
 }
