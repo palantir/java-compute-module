@@ -6,8 +6,8 @@ pluginManagement {
 
 buildscript {
     repositories {
-        mavenCentral() { metadataSources { mavenPom(); ignoreGradleMetadataRedirection() } }
-        gradlePluginPortal() { metadataSources { mavenPom(); ignoreGradleMetadataRedirection() } }
+        mavenCentral()
+        gradlePluginPortal()
     }
 }
 
