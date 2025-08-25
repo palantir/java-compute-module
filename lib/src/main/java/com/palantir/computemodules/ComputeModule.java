@@ -65,6 +65,8 @@ public final class ComputeModule {
      * Starts the client polling loop. This is blocking, run in the background needed.
      */
     public Void start() {
+        // notify the runtime of (re)start of the module
+        client.postRestart();
         while (true) {
             client.getJob().ifPresent(job -> {
                 ListenableFuture<Result> future = executor.submit(() -> execute(job));
