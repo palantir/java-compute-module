@@ -125,7 +125,10 @@ public final class ComputeModule {
     }
 
     private ComputeModule(
-            Client client, ListeningExecutorService executor, Map<String, FunctionRunner<?, ?>> functions, boolean reportsRestart) {
+            Client client,
+            ListeningExecutorService executor,
+            Map<String, FunctionRunner<?, ?>> functions,
+            boolean reportsRestart) {
         this.client = client;
         this.executor = executor;
         this.functions = functions;
@@ -188,7 +191,8 @@ public final class ComputeModule {
         }
 
         public ComputeModule build() {
-            return new ComputeModule(client.orElseGet(() -> new ComputeModuleClient()), executor, functions, reportsRestart);
+            return new ComputeModule(
+                    client.orElseGet(() -> new ComputeModuleClient()), executor, functions, reportsRestart);
         }
     }
 }
