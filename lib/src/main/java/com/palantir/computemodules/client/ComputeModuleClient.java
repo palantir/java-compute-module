@@ -79,7 +79,7 @@ public final class ComputeModuleClient implements Client {
                 .uri(URI.create("http://127.0.0.1:8946/results" + "/" + jobId))
                 .POST(BodyPublishers.ofInputStream(() -> result))
                 .build();
-        String error;
+        String error = "";
         try {
             for (Integer i = 0; i < POST_RESULT_MAX_ATTEMPTS; i++) {
                 HttpResponse response = client.send(request, BodyHandlers.ofString());
@@ -88,14 +88,13 @@ public final class ComputeModuleClient implements Client {
                     return;
                 }
                 error = new String(
-                        "Failed to post error for jobId: " + jobId + ", statusCode: " + response.statusCode(),
-                        StandardCharsets.UTF_8);
+                        "Failed to post error for jobId: " + jobId + ", statusCode: " + response.statusCode());
                 log.error("Failed to post error", SafeArg.of("jobId", error));
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
             error = new String(
-                    "Failed to post error for jobId: " + jobId + "error: " + e.toString(), StandardCharsets.UTF_8);
+                    "Failed to post error for jobId: " + jobId + "error: " + e.toString());
             log.error("Failed to post result", SafeArg.of("jobId", jobId), e);
         }
         log.error(
@@ -127,6 +126,7 @@ public final class ComputeModuleClient implements Client {
         }
     }
 
+    @Override
     public void postRestart() {
         HttpRequest request = postRequest
                 .copy()

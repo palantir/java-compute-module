@@ -23,4 +23,6 @@ public interface Client {
     Optional<ComputeModuleJob> getJob();
 
     void postResult(String jobId, InputStream result);
+
+    void postRestart();
 }
