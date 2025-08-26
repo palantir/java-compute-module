@@ -87,15 +87,22 @@ public final class ComputeModuleClient implements Client {
                     log.info("Successfully posted result", SafeArg.of("jobId", jobId));
                     return;
                 }
-                error = new String("Failed to post error for jobId: " + jobId + ", statusCode: " + response.statusCode(), StandardCharsets.UTF_8);
+                error = new String(
+                        "Failed to post error for jobId: " + jobId + ", statusCode: " + response.statusCode(),
+                        StandardCharsets.UTF_8);
                 log.error("Failed to post error", SafeArg.of("jobId", error));
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
-            error = new String("Failed to post error for jobId: " + jobId + "error: " + e.toString(), StandardCharsets.UTF_8);
+            error = new String(
+                    "Failed to post error for jobId: " + jobId + "error: " + e.toString(), StandardCharsets.UTF_8);
             log.error("Failed to post result", SafeArg.of("jobId", jobId), e);
         }
-        log.error("Failed to post result after several attempts. Now attempting to return the error as the result. ", SafeArg.of("jobId", jobId), SafeArg.of("error", error),  SafeArg.of("attempts", POST_RESULT_MAX_ATTEMPTS));
+        log.error(
+                "Failed to post result after several attempts. Now attempting to return the error as the result. ",
+                SafeArg.of("jobId", jobId),
+                SafeArg.of("error", error),
+                SafeArg.of("attempts", POST_RESULT_MAX_ATTEMPTS));
         postError(jobId, error);
     }
 
