@@ -93,8 +93,7 @@ public final class ComputeModuleClient implements Client {
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
-            error = new String(
-                    "Failed to post error for jobId: " + jobId + "error: " + e.toString());
+            error = new String("Failed to post error for jobId: " + jobId + "error: " + e.toString());
             log.error("Failed to post result", SafeArg.of("jobId", jobId), e);
         }
         log.error(
