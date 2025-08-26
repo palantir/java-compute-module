@@ -82,7 +82,7 @@ public final class ComputeModuleClient implements Client {
         String error = "";
         try {
             for (Integer i = 0; i < POST_RESULT_MAX_ATTEMPTS; i++) {
-                HttpResponse response = client.send(request, BodyHandlers.ofString());
+                HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
                 if (response.statusCode() == 204) {
                     log.info("Successfully posted result", SafeArg.of("jobId", jobId));
                     return;
@@ -113,7 +113,7 @@ public final class ComputeModuleClient implements Client {
                 .build();
         for (Integer i = 0; i < POST_ERROR_MAX_ATTEMPTS; i++) {
             try {
-                HttpResponse response = client.send(request, BodyHandlers.ofString());
+                HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
                 if (response.statusCode() == 204) {
                     log.info("Successfully posted error", SafeArg.of("jobId", jobId));
                     return;
