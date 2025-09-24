@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palantir.computemodules.ssl.SslUtils;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
+import com.palantir.logsafe.exceptions.SafeUncheckedIoException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -84,7 +85,7 @@ public final class ThirdPartyAuth {
         } catch (InterruptedException e) {
             throw new SafeRuntimeException("Interrupted while fetching OAuth token", e);
         } catch (IOException e) {
-            throw new SafeRuntimeException("IOException while fetching OAuth token", e);
+            throw new SafeUncheckedIoException("IOException while fetching OAuth token", e);
         }
         return "";
     }

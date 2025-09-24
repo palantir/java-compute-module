@@ -16,6 +16,7 @@
 package com.palantir.computemodules.client.config;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -69,7 +70,7 @@ public final class EnvVars {
             try {
                 return Files.readString(Path.of(readAsString(name)));
             } catch (IOException e) {
-                throw new RuntimeException("Failed to read file pointed to by EnvVar: " + name, e);
+                throw new UncheckedIOException("Failed to read file pointed to by EnvVar: " + name, e);
             }
         }
     }

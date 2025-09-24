@@ -17,6 +17,7 @@
 package com.palantir.computemodules.auth;
 
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
+import com.palantir.logsafe.exceptions.SafeUncheckedIoException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -37,7 +38,7 @@ public final class PipelinesAuth {
             return Files.readString(Paths.get(tokenFilePath), StandardCharsets.UTF_8)
                     .trim();
         } catch (IOException e) {
-            throw new SafeRuntimeException("Failed to read pipeline token from file where it is stored.", e);
+            throw new SafeUncheckedIoException("Failed to read pipeline token from file where it is stored.", e);
         }
     }
 }
