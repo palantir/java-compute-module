@@ -16,12 +16,15 @@
 package com.palantir.computemodules.functions.serde;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-public final class DefaultDeserializer<I> implements Deserializer<I> {
-    private static final ObjectMapper mapper = Mapper.get();
+public final class Mapper {
 
-    @Override
-    public I deserialize(Object input, Class<I> typeMarker) {
-        return mapper.convertValue(input, typeMarker);
+    private Mapper() {}
+
+    private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
+    public static ObjectMapper get() {
+        return objectMapper;
     }
 }

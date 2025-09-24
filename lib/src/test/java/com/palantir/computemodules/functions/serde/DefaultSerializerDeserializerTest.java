@@ -118,9 +118,7 @@ class DefaultSerializerDeserializerTest {
     @Test
     void test_serialize_object_with_date_time_fields() throws IOException {
         DateTimeObject input = new DateTimeObject(
-            LocalDate.of(2024, Month.JANUARY, 1),
-            LocalDateTime.of(2024, Month.DECEMBER, 31, 23, 59, 59)
-        );
+                LocalDate.of(2024, Month.JANUARY, 1), LocalDateTime.of(2024, Month.DECEMBER, 31, 23, 59, 59));
 
         Result result = serializer.serialize(TEST_JOB_ID, input);
 
@@ -198,7 +196,10 @@ class DefaultSerializerDeserializerTest {
         LocalDateTime result = localDateTimeDeserializer.deserialize(inputArray, LocalDateTime.class);
 
         assertNotNull(result, "Deserialized LocalDateTime should not be null");
-        assertEquals(LocalDateTime.of(2024, Month.MARCH, 15, 14, 30, 45), result, "Deserialized LocalDateTime should match original");
+        assertEquals(
+                LocalDateTime.of(2024, Month.MARCH, 15, 14, 30, 45),
+                result,
+                "Deserialized LocalDateTime should match original");
     }
 
     @Test
@@ -212,7 +213,10 @@ class DefaultSerializerDeserializerTest {
 
         assertNotNull(result, "Deserialized DateTimeObject should not be null");
         assertEquals(LocalDate.of(2024, Month.JANUARY, 1), result.date(), "Deserialized date should match original");
-        assertEquals(LocalDateTime.of(2024, Month.DECEMBER, 31, 23, 59, 59), result.dateTime(), "Deserialized dateTime should match original");
+        assertEquals(
+                LocalDateTime.of(2024, Month.DECEMBER, 31, 23, 59, 59),
+                result.dateTime(),
+                "Deserialized dateTime should match");
     }
 
     @Test
@@ -246,9 +250,7 @@ class DefaultSerializerDeserializerTest {
     void test_round_trip_with_date_time_object() throws Exception {
         DefaultDeserializer<DateTimeObject> dateTimeObjectDeserializer = new DefaultDeserializer<>();
         DateTimeObject original = new DateTimeObject(
-            LocalDate.of(2024, Month.JUNE, 15),
-            LocalDateTime.of(2024, Month.JUNE, 15, 12, 0, 0)
-        );
+                LocalDate.of(2024, Month.JUNE, 15), LocalDateTime.of(2024, Month.JUNE, 15, 12, 0, 0));
 
         Result serializeResult = serializer.serialize(TEST_JOB_ID, original);
         assertInstanceOf(Ok.class, serializeResult, "DateTimeObject round-trip serialization should return Ok result");
