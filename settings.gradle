@@ -5,11 +5,13 @@ pluginManagement {
 }
 
 buildscript {
+    dependencies { classpath 'com.palantir.gradle.jdks:gradle-jdks-settings:0.69.0' }
     repositories {
         mavenCentral()
         gradlePluginPortal()
     }
 }
+apply plugin: 'com.palantir.jdks.settings'
 
 rootProject.name = 'java-compute-module'
 
