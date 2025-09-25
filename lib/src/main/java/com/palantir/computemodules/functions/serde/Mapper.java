@@ -24,8 +24,8 @@ public final class Mapper {
     private Mapper() {}
 
     private static final ObjectMapper objectMapper = new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            .registerModule(new JavaTimeModule())
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public static ObjectMapper get() {
         return objectMapper;
