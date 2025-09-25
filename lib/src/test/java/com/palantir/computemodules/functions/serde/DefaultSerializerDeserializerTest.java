@@ -15,9 +15,8 @@
  */
 package com.palantir.computemodules.functions.serde;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,10 +45,12 @@ class DefaultSerializerDeserializerTest {
 
         assertInstanceOf(Ok.class, result, "String serialization should return Ok result");
         Ok okResult = (Ok) result;
-        assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals("\"Hello World\"", serialized, "String should be serialized as JSON string");
+        assertThat(serialized)
+                .describedAs("String should be serialized as JSON string")
+                .isEqualTo("\"Hello World\"");
     }
 
     @Test
@@ -60,10 +61,12 @@ class DefaultSerializerDeserializerTest {
 
         assertInstanceOf(Ok.class, result, "Integer serialization should return Ok result");
         Ok okResult = (Ok) result;
-        assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals("42", serialized, "Integer should be serialized as JSON number");
+        assertThat(serialized)
+                .describedAs("Integer should be serialized as JSON number")
+                .isEqualTo("42");
     }
 
     @Test
@@ -74,7 +77,7 @@ class DefaultSerializerDeserializerTest {
 
         assertInstanceOf(Ok.class, result, "Complex object serialization should return Ok result");
         Ok okResult = (Ok) result;
-        assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
         assertTrue(serialized.contains("\"name\":\"test\""), "Serialized JSON should contain name field");
@@ -90,7 +93,7 @@ class DefaultSerializerDeserializerTest {
 
         assertInstanceOf(Ok.class, result, "Serialization of LocalDate failed with " + result);
         Ok okResult = (Ok) result;
-        assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
         assertTrue(serialized.equals("\"2024-03-15\""), "Serialized LocalDate should match input");
@@ -104,10 +107,12 @@ class DefaultSerializerDeserializerTest {
 
         assertInstanceOf(Ok.class, result, "LocalDateTime serialization should return Ok result");
         Ok okResult = (Ok) result;
-        assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(serialized, "\"2024-03-15T14:30:45\"", "Serialized LocalDateTime should match input");
+        assertThat("\"2024-03-15T14:30:45\"")
+                .describedAs("Serialized LocalDateTime should match input")
+                .isEqualTo(serialized);
     }
 
     @Test
@@ -119,10 +124,10 @@ class DefaultSerializerDeserializerTest {
 
         assertInstanceOf(Ok.class, result, "DateTimeObject serialization should return Ok result");
         Ok okResult = (Ok) result;
-        assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals("{\"date\":\"2024-01-01\",\"dateTime\":\"2024-12-31T23:59:59\"}", serialized);
+        assertThat(serialized).isEqualTo("{\"date\":\"2024-01-01\",\"dateTime\":\"2024-12-31T23:59:59\"}");
     }
 
     @Test
@@ -132,7 +137,9 @@ class DefaultSerializerDeserializerTest {
 
         String result = stringDeserializer.deserialize(inputObject, String.class);
 
-        assertEquals("Hello World", result, "Deserialized string should match original");
+        assertThat(result)
+                .describedAs("Deserialized string should match original")
+                .isEqualTo("Hello World");
     }
 
     @Test
@@ -142,7 +149,9 @@ class DefaultSerializerDeserializerTest {
 
         Integer result = integerDeserializer.deserialize(inputObject, Integer.class);
 
-        assertEquals(42, result, "Deserialized integer should match original");
+        assertThat(result)
+                .describedAs("Deserialized integer should match original")
+                .isEqualTo(42);
     }
 
     @Test
@@ -152,7 +161,9 @@ class DefaultSerializerDeserializerTest {
 
         Integer result = integerDeserializer.deserialize(inputObject, Integer.class);
 
-        assertEquals(42, result, "Deserialized Long should convert to Integer");
+        assertThat(result)
+                .describedAs("Deserialized Long should convert to Integer")
+                .isEqualTo(42);
     }
 
     @Test
@@ -164,10 +175,16 @@ class DefaultSerializerDeserializerTest {
 
         TestObject result = testObjectDeserializer.deserialize(inputMap, TestObject.class);
 
-        assertNotNull(result, "Deserialized object should not be null");
-        assertEquals("test", result.name(), "Deserialized name should match original");
-        assertEquals(123, result.value(), "Deserialized value should match original");
-        assertEquals(List.of("a", "b", "c"), result.items(), "Deserialized items should match original");
+        assertThat(result).describedAs("Deserialized object should not be null").isNotNull();
+        assertThat(result.name())
+                .describedAs("Deserialized name should match original")
+                .isEqualTo("test");
+        assertThat(result.value())
+                .describedAs("Deserialized value should match original")
+                .isEqualTo(123);
+        assertThat(result.items())
+                .describedAs("Deserialized items should match original")
+                .isEqualTo(List.of("a", "b", "c"));
     }
 
     @Test
@@ -177,8 +194,12 @@ class DefaultSerializerDeserializerTest {
 
         LocalDate result = localDateDeserializer.deserialize(inputArray, LocalDate.class);
 
-        assertNotNull(result, "Deserialized LocalDate should not be null");
-        assertEquals(LocalDate.of(2024, Month.MARCH, 15), result, "Deserialized LocalDate should match original");
+        assertThat(result)
+                .describedAs("Deserialized LocalDate should not be null")
+                .isNotNull();
+        assertThat(result)
+                .describedAs("Deserialized LocalDate should match original")
+                .isEqualTo(LocalDate.of(2024, Month.MARCH, 15));
     }
 
     @Test
@@ -188,11 +209,12 @@ class DefaultSerializerDeserializerTest {
 
         LocalDateTime result = localDateTimeDeserializer.deserialize(inputArray, LocalDateTime.class);
 
-        assertNotNull(result, "Deserialized LocalDateTime should not be null");
-        assertEquals(
-                LocalDateTime.of(2024, Month.MARCH, 15, 14, 30, 45),
-                result,
-                "Deserialized LocalDateTime should match original");
+        assertThat(result)
+                .describedAs("Deserialized LocalDateTime should not be null")
+                .isNotNull();
+        assertThat(result)
+                .describedAs("Deserialized LocalDateTime should match original")
+                .isEqualTo(LocalDateTime.of(2024, Month.MARCH, 15, 14, 30, 45));
     }
 
     @Test
@@ -204,12 +226,15 @@ class DefaultSerializerDeserializerTest {
 
         DateTimeObject result = dateTimeObjectDeserializer.deserialize(inputMap, DateTimeObject.class);
 
-        assertNotNull(result, "Deserialized DateTimeObject should not be null");
-        assertEquals(LocalDate.of(2024, Month.JANUARY, 1), result.date(), "Deserialized date should match original");
-        assertEquals(
-                LocalDateTime.of(2024, Month.DECEMBER, 31, 23, 59, 59),
-                result.dateTime(),
-                "Deserialized dateTime should match");
+        assertThat(result)
+                .describedAs("Deserialized DateTimeObject should not be null")
+                .isNotNull();
+        assertThat(result.date())
+                .describedAs("Deserialized date should match original")
+                .isEqualTo(LocalDate.of(2024, Month.JANUARY, 1));
+        assertThat(result.dateTime())
+                .describedAs("Deserialized dateTime should match")
+                .isEqualTo(LocalDateTime.of(2024, Month.DECEMBER, 31, 23, 59, 59));
     }
 
     @Test
@@ -218,7 +243,7 @@ class DefaultSerializerDeserializerTest {
 
         assertInstanceOf(Ok.class, result, "Null input serialization should return Ok result");
         Ok okResult = (Ok) result;
-        assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
     }
 
     @Test
@@ -236,7 +261,9 @@ class DefaultSerializerDeserializerTest {
 
         TestObject deserialized = testObjectDeserializer.deserialize(inputMap, TestObject.class);
 
-        assertEquals(original, deserialized, "Round-trip object should equal original");
+        assertThat(deserialized)
+                .describedAs("Round-trip object should equal original")
+                .isEqualTo(original);
     }
 
     @Test
@@ -255,7 +282,9 @@ class DefaultSerializerDeserializerTest {
 
         DateTimeObject deserialized = dateTimeObjectDeserializer.deserialize(inputMap, DateTimeObject.class);
 
-        assertEquals(original, deserialized, "Round-trip DateTimeObject should equal original");
+        assertThat(deserialized)
+                .describedAs("Round-trip DateTimeObject should equal original")
+                .isEqualTo(original);
     }
 
     private record TestObject(String name, int value, List<String> items) {}
