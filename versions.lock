@@ -34,7 +34,7 @@ org.checkerframework:checker-qual:3.43.0 (1 constraints: 4c0a4abf)
 
 org.jetbrains:annotations:24.1.0 (1 constraints: 331166d1)
 
-org.slf4j:slf4j-api:1.7.36 (1 constraints: 471091b6)
+org.slf4j:slf4j-api:2.0.17 (1 constraints: 471091b6)
 
 
 
