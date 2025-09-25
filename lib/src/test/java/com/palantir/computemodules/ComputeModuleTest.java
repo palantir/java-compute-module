@@ -54,23 +54,23 @@ class ComputeModuleTest {
         Integer result3 = testClient.result(job3, Integer.class);
         String result1 = testClient.result(job1, String.class);
 
-        assertThat("hello Compute Module").isEqualTo(result1);
-        assertThat(4).isEqualTo(result2);
-        assertThat(20).isEqualTo(result3);
+        assertThat(result1).isEqualTo("hello Compute Module");
+        assertThat(result2).isEqualTo(4);
+        assertThat(result3).isEqualTo(20);
     }
 
     @Test
     void test_invalid_function_name() throws IOException {
         InputStream result = testClient.execute("doesn't exist", 2);
         String error = new String(result.readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(true).isEqualTo(error.contains("Requested function not found"));
+        assertThat(error.contains("Requested function not found")).isEqualTo(true);
     }
 
     @Test
     void test_user_function_that_throws() throws IOException {
         InputStream result = testClient.execute("error", 2);
         String error = new String(result.readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(true).isEqualTo(error.contains("Intentionally throwing: 2"));
+        assertThat(error.contains("Intentionally throwing: 2")).isEqualTo(true);
     }
 
     static Integer dub(Context context, Integer input) {
