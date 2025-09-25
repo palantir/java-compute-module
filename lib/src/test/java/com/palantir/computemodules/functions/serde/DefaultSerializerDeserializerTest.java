@@ -110,9 +110,9 @@ class DefaultSerializerDeserializerTest {
         assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertThat("\"2024-03-15T14:30:45\"")
+        assertThat(serialized)
                 .describedAs("Serialized LocalDateTime should match input")
-                .isEqualTo(serialized);
+                .isEqualTo("\"2024-03-15T14:30:45\"");
     }
 
     @Test
@@ -184,7 +184,7 @@ class DefaultSerializerDeserializerTest {
                 .isEqualTo(123);
         assertThat(result.items())
                 .describedAs("Deserialized items should match original")
-                .isEqualTo(List.of("a", "b", "c"));
+                .containsExactly("a", "b", "c");
     }
 
     @Test
