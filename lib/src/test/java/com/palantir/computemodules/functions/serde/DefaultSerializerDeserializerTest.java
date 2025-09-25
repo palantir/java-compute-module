@@ -93,8 +93,7 @@ class DefaultSerializerDeserializerTest {
         assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(serialized.contains("2024"), "Serialized LocalDate should contain year 2024");
-        assertTrue(serialized.contains("15"), "Serialized LocalDate should contain day 15");
+        assertTrue(serialized.equals("\"2024-03-15\""), "Serialized LocalDate should match input");
     }
 
     @Test
@@ -108,11 +107,7 @@ class DefaultSerializerDeserializerTest {
         assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(serialized.contains("2024"), "Serialized LocalDateTime should contain year 2024");
-        assertTrue(serialized.contains("15"), "Serialized LocalDateTime should contain day 15");
-        assertTrue(serialized.contains("14"), "Serialized LocalDateTime should contain hour 14");
-        assertTrue(serialized.contains("30"), "Serialized LocalDateTime should contain minute 30");
-        assertTrue(serialized.contains("45"), "Serialized LocalDateTime should contain second 45");
+        assertEquals(serialized, "\"2024-03-15T14:30:45\"", "Serialized LocalDateTime should match input");
     }
 
     @Test
@@ -127,9 +122,7 @@ class DefaultSerializerDeserializerTest {
         assertEquals(TEST_JOB_ID, okResult.jobId(), "Job ID should match input");
 
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(serialized.contains("\"date\""), "Serialized object should contain date field");
-        assertTrue(serialized.contains("\"dateTime\""), "Serialized object should contain dateTime field");
-        assertTrue(serialized.contains("2024"), "Serialized object should contain year 2024");
+        assertEquals("{\"date\":\"2024-01-01\",\"dateTime\":\"2024-12-31T23:59:59\"}", serialized);
     }
 
     @Test
@@ -205,7 +198,7 @@ class DefaultSerializerDeserializerTest {
     @Test
     void test_deserialize_object_with_date_time_fields() throws Exception {
         DefaultDeserializer<DateTimeObject> dateTimeObjectDeserializer = new DefaultDeserializer<>();
-        String json = "{\"date\":[2024,1,1],\"dateTime\":[2024,12,31,23,59,59]}";
+        String json = "{\"date\":\"2024-01-01\",\"dateTime\":\"2024-12-31T23:59:59\"}";
         @SuppressWarnings("unchecked")
         Map<String, Object> inputMap = mapper.readValue(json, Map.class);
 
