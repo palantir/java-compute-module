@@ -63,14 +63,14 @@ class ComputeModuleTest {
     void test_invalid_function_name() throws IOException {
         InputStream result = testClient.execute("doesn't exist", 2);
         String error = new String(result.readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(error.contains("Requested function not found")).isEqualTo(true);
+        assertThat(error.contains("Requested function not found")).isTrue();
     }
 
     @Test
     void test_user_function_that_throws() throws IOException {
         InputStream result = testClient.execute("error", 2);
         String error = new String(result.readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(error.contains("Intentionally throwing: 2")).isEqualTo(true);
+        assertThat(error.contains("Intentionally throwing: 2")).isTrue();
     }
 
     static Integer dub(Context context, Integer input) {
