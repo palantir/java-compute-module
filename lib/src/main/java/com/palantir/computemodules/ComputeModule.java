@@ -73,7 +73,7 @@ public final class ComputeModule {
                         new FutureCallback<Result>() {
 
                             @Override
-                            public void onSuccess(Result result) {
+                            public void onSuccess(@SuppressWarnings("for-rollout:NullAway") Result result) {
                                 switch (result) {
                                     case Ok ok -> client.postResult(ok.jobId(), ok.result());
                                     case Failed failed -> client.postResult(failed.jobId(), serializeException(failed));
