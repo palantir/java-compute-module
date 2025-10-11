@@ -57,7 +57,7 @@ allprojects {
 
 javaVersions {
     libraryTarget = 21
-    runtime = 21
+    runtime = 25
 }
 
 jdks {
