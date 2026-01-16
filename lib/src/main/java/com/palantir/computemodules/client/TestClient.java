@@ -109,4 +109,7 @@ public final class TestClient implements Client {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void postRestart() {}
 }

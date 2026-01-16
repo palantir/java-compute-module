@@ -56,6 +56,7 @@ public final class ComputeModule {
     private final Map<String, FunctionRunner<?, ?>> functions;
     private final Client client;
     private final ListeningExecutorService executor;
+    private final boolean reportsRestart;
 
     public static ComputeModuleBuilder builder() {
         return new ComputeModuleBuilder();
@@ -65,6 +66,10 @@ public final class ComputeModule {
      * Starts the client polling loop. This is blocking, run in the background needed.
      */
     public Void start() {
+        // notify the runtime of (re)start of the module
+        if (reportsRestart) {
+            client.postRestart();
+        }
         while (true) {
             client.getJob().ifPresent(job -> {
                 ListenableFuture<Result> future = executor.submit(() -> execute(job));
@@ -120,10 +125,14 @@ public final class ComputeModule {
     }
 
     private ComputeModule(
-            Client client, ListeningExecutorService executor, Map<String, FunctionRunner<?, ?>> functions) {
+            Client client,
+            ListeningExecutorService executor,
+            Map<String, FunctionRunner<?, ?>> functions,
+            boolean reportsRestart) {
         this.client = client;
         this.executor = executor;
         this.functions = functions;
+        this.reportsRestart = reportsRestart;
     }
 
     public static final class ComputeModuleBuilder {
@@ -132,6 +141,7 @@ public final class ComputeModule {
                 Optional.empty(); // ComputeModuleClient construction is deferred due to env vars
         private ListeningExecutorService executor =
                 MoreExecutors.listeningDecorator(Executors.newVirtualThreadPerTaskExecutor());
+        private boolean reportsRestart = false;
 
         private ComputeModuleBuilder() {
             functions = new HashMap<>();
@@ -175,8 +185,14 @@ public final class ComputeModule {
             return this;
         }
 
+        public ComputeModuleBuilder withReportsRestart() {
+            this.reportsRestart = true;
+            return this;
+        }
+
         public ComputeModule build() {
-            return new ComputeModule(client.orElseGet(() -> new ComputeModuleClient()), executor, functions);
+            return new ComputeModule(
+                    client.orElseGet(() -> new ComputeModuleClient()), executor, functions, reportsRestart);
         }
     }
 }
