@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
+import com.palantir.logsafe.exceptions.SafeUncheckedIoException;
 import com.palantir.logsafe.logger.SafeLogger;
 import com.palantir.logsafe.logger.SafeLoggerFactory;
 import java.io.IOException;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public final class ClientCredentialsTokenProvider implements Supplier<String> {
     private static final SafeLogger log = SafeLoggerFactory.get(ClientCredentialsTokenProvider.class);
@@ -142,7 +143,7 @@ public final class ClientCredentialsTokenProvider implements Supplier<String> {
             AuthTokenResponse response = mapper.readValue(raw, AuthTokenResponse.class);
             return Optional.of(response);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new SafeUncheckedIoException(e);
         }
     }
 
