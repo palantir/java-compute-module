@@ -1,14 +1,17 @@
 pluginManagement {
     repositories {
-        mavenCentral()
+        mavenCentral() { metadataSources { mavenPom(); ignoreGradleMetadataRedirection() } }
     }
 }
 
 buildscript {
+    dependencies { classpath 'com.palantir.gradle.jdks:gradle-jdks-settings:0.73.0' }
     repositories {
         mavenCentral()
+        gradlePluginPortal()
     }
 }
+apply plugin: 'com.palantir.jdks.settings'
 
 rootProject.name = 'java-compute-module'
 

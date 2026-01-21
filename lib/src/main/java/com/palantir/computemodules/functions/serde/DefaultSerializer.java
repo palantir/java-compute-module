@@ -24,7 +24,7 @@ import com.palantir.logsafe.Unsafe;
 import java.io.ByteArrayInputStream;
 
 public final class DefaultSerializer<O> implements Serializer<O> {
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = Mapper.get();
 
     @Unsafe
     @Override

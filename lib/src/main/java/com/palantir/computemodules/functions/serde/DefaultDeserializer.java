@@ -18,7 +18,7 @@ package com.palantir.computemodules.functions.serde;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class DefaultDeserializer<I> implements Deserializer<I> {
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = Mapper.get();
 
     @Override
     public I deserialize(Object input, Class<I> typeMarker) {

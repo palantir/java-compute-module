@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class ComputeModule {
 
@@ -56,6 +58,7 @@ public final class ComputeModule {
     private final Map<String, FunctionRunner<?, ?>> functions;
     private final Client client;
     private final ListeningExecutorService executor;
+    private static final String NULL_VALUE_FROM_FUNCTION_RUN = "No value received from function execution.";
 
     public static ComputeModuleBuilder builder() {
         return new ComputeModuleBuilder();
@@ -70,10 +73,15 @@ public final class ComputeModule {
                 ListenableFuture<Result> future = executor.submit(() -> execute(job));
                 Futures.addCallback(
                         future,
-                        new FutureCallback<Result>() {
+                        new FutureCallback<>() {
 
                             @Override
-                            public void onSuccess(Result result) {
+                            public void onSuccess(@Nullable Result result) {
+                                if (null == result) {
+                                    client.postResult(
+                                            job.jobId(), serializeNullValueReceived(job.jobId(), job.queryType()));
+                                    return;
+                                }
                                 switch (result) {
                                     case Ok ok -> client.postResult(ok.jobId(), ok.result());
                                     case Failed failed -> client.postResult(failed.jobId(), serializeException(failed));
@@ -81,7 +89,7 @@ public final class ComputeModule {
                             }
 
                             @Override
-                            public void onFailure(Throwable throwable) {
+                            public void onFailure(@NotNull Throwable throwable) {
                                 Failed failed = new Failed(job.jobId(), new Exception(throwable));
                                 client.postResult(failed.jobId(), serializeException(failed));
                             }
@@ -103,6 +111,21 @@ public final class ComputeModule {
                             SafeArg.of("requested", job.queryType()),
                             SafeArg.of("known", functions.keySet())));
         }
+    }
+
+    private InputStream serializeNullValueReceived(String jobId, String queryType) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintWriter pw =
+                new PrintWriter(new BufferedWriter(new OutputStreamWriter(baos, StandardCharsets.UTF_8)))) {
+            pw.println("JobId: " + jobId);
+            pw.println("QueryType: " + queryType);
+            pw.println(NULL_VALUE_FROM_FUNCTION_RUN);
+        } catch (Exception e) {
+            log.error("Failed to serialize null value message", SafeArg.of("jobId", jobId), e);
+            String message = "Exception serializing null value message for job, check logs: " + jobId;
+            return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+        }
+        return new ByteArrayInputStream(baos.toByteArray());
     }
 
     private InputStream serializeException(Failed failed) {
@@ -167,7 +190,7 @@ public final class ComputeModule {
         }
 
         /*
-         * Not required, if unused the default executor will use virtual threads. Each job is ran on it's own
+         * Not required, if unused the default executor will use virtual threads. Each job is ran on its own
          * thread spawned from this ExecutorService, results are posted in a callback scheduled on this executor.
          */
         public ComputeModuleBuilder withExecutor(ExecutorService newExecutor) {
