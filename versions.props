@@ -5,4 +5,4 @@ org.assertj:assertj-core = 3.27.6
 org.junit.jupiter:* = 6.0.2
 org.junit.platform:* = 6.0.2
 org.slf4j:* = 2.0.17
-com.palantir.safe-logging:* = 3.10.0
+com.palantir.safe-logging:* = 3.11.0
