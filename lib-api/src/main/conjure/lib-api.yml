@@ -4,7 +4,7 @@ types:
       external:
         java: java.math.BigDecimal
   definitions:
-    default-package: com.palantir.computemodules.functions
+    default-package: com.palantir.computemodules.functions.api
     objects:
       DataType:
         docs: |
@@ -101,6 +101,8 @@ types:
             type: optional<map<CustomTypeFieldName, CustomTypeFieldMetadata>>
             docs: |
               When this map is present, it is expected that metadata is provided for every field.
+      UnknownType:
+        fields: {}
 
 
       CustomTypeFieldName:
