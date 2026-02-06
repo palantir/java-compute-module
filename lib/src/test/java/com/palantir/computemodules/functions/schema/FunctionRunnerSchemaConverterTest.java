@@ -16,8 +16,9 @@
 
 package com.palantir.computemodules.functions.schema;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.palantir.computemodules.functions.FunctionRunner;
 import com.palantir.computemodules.functions.api.AnonymousCustomType;
 import com.palantir.computemodules.functions.api.BooleanType;
 import com.palantir.computemodules.functions.api.ByteType;
@@ -31,9 +32,16 @@ import com.palantir.computemodules.functions.api.ListType;
 import com.palantir.computemodules.functions.api.LongType;
 import com.palantir.computemodules.functions.api.MapType;
 import com.palantir.computemodules.functions.api.OptionalType;
+import com.palantir.computemodules.functions.api.FunctionInputType;
+import com.palantir.computemodules.functions.api.FunctionOutputType;
+import com.palantir.computemodules.functions.api.InputName;
+import com.palantir.computemodules.functions.api.QueryRunnerSchema;
+import com.palantir.computemodules.functions.api.QueryRunnerSchemaParseIssue;
 import com.palantir.computemodules.functions.api.SetType;
 import com.palantir.computemodules.functions.api.ShortType;
 import com.palantir.computemodules.functions.api.StringType;
+import com.palantir.computemodules.functions.serde.Deserializer;
+import com.palantir.computemodules.functions.serde.Serializer;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -288,5 +296,159 @@ class FunctionRunnerSchemaConverterTest {
         DataType expected = DataType.anonymousCustomType(
                 AnonymousCustomType.builder().fields(expectedFields).build());
         assertThat(dType.orElseThrow()).isEqualTo(expected);
+    }
+
+    // Test input/output classes for getFunctionSchemas tests
+    static class SimpleInput {
+        public final String name;
+        public final int value;
+
+        SimpleInput(String name, int value) {
+            this.name = name;
+            this.value = value;
+        }
+    }
+
+    static class SimpleOutput {
+        public final boolean success;
+        public final String message;
+
+        SimpleOutput(boolean success, String message) {
+            this.success = success;
+            this.message = message;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <I, O> FunctionRunner<I, O> createMockFunctionRunner(Class<I> inputClass, Class<O> outputClass) {
+        return new FunctionRunner<>(
+                (_context, _input) -> null,
+                inputClass,
+                outputClass,
+                (Deserializer<I>) (input, _type) -> (I) input,
+                (Serializer<O>) (_jobId, _output) -> null);
+    }
+
+    @Test
+    public void testGetFunctionSchemasWithSingleFunction() {
+        Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
+        functions.put("testFunction", createMockFunctionRunner(SimpleInput.class, SimpleOutput.class));
+
+        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+
+        assertThat(schemas).hasSize(1);
+        QueryRunnerSchema schema = schemas.get(0);
+        assertThat(schema.getFunctionName()).isEqualTo("testFunction");
+        assertThat(schema.getIssues()).isEmpty();
+
+        // Verify inputs
+        List<FunctionInputType> inputs = schema.getInputs();
+        assertThat(inputs).hasSize(2);
+        Set<String> inputNames =
+                new HashSet<>(inputs.stream().map(i -> i.getName().get()).toList());
+        assertThat(inputNames).containsExactlyInAnyOrder("name", "value");
+
+        // Verify output is a single output type
+        FunctionOutputType outputType = schema.getOutput();
+        DataType outputDataType = outputType.accept(FunctionOutputType.Visitor.<DataType>builder()
+                .single(single -> single.getDataType())
+                .void_(_void -> null)
+                .throwOnUnknown()
+                .build());
+        assertThat(outputDataType).isNotNull();
+    }
+
+    @Test
+    public void testGetFunctionSchemasWithMultipleFunctions() {
+        Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
+        functions.put("function1", createMockFunctionRunner(SimpleInput.class, String.class));
+        functions.put("function2", createMockFunctionRunner(ParentTestClass.class, Integer.class));
+
+        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+
+        assertThat(schemas).hasSize(2);
+        Set<String> functionNames =
+                new HashSet<>(schemas.stream().map(QueryRunnerSchema::getFunctionName).toList());
+        assertThat(functionNames).containsExactlyInAnyOrder("function1", "function2");
+    }
+
+    @Test
+    public void testGetFunctionSchemasWithEmptyMap() {
+        Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
+
+        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+
+        assertThat(schemas).isEmpty();
+    }
+
+    @Test
+    public void testGetFunctionSchemasWithAtomicInputType() {
+        Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
+        functions.put("atomicInputFunction", createMockFunctionRunner(String.class, SimpleOutput.class));
+
+        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+
+        assertThat(schemas).hasSize(1);
+        QueryRunnerSchema schema = schemas.get(0);
+        assertThat(schema.getFunctionName()).isEqualTo("atomicInputFunction");
+        assertThat(schema.getIssues()).containsExactly(QueryRunnerSchemaParseIssue.CANNOT_PARSE_INPUTS);
+        assertThat(schema.getInputs()).isEmpty();
+    }
+
+    @Test
+    public void testGetFunctionSchemasInputsAreMarkedRequired() {
+        Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
+        functions.put("testFunction", createMockFunctionRunner(SimpleInput.class, String.class));
+
+        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+
+        assertThat(schemas).hasSize(1);
+        QueryRunnerSchema schema = schemas.get(0);
+        for (FunctionInputType input : schema.getInputs()) {
+            assertThat(input.getRequired()).isTrue();
+        }
+    }
+
+    @Test
+    public void testGetFunctionSchemasOutputTypeCorrectlyConverted() {
+        Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
+        functions.put("stringOutputFunction", createMockFunctionRunner(SimpleInput.class, String.class));
+
+        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+
+        assertThat(schemas).hasSize(1);
+        QueryRunnerSchema schema = schemas.get(0);
+        FunctionOutputType outputType = schema.getOutput();
+        DataType outputDataType = outputType.accept(FunctionOutputType.Visitor.<DataType>builder()
+                .single(single -> single.getDataType())
+                .void_(_void -> null)
+                .throwOnUnknown()
+                .build());
+        assertThat(outputDataType).isEqualTo(DataType.string(StringType.of()));
+    }
+
+    @Test
+    public void testGetFunctionSchemasWithComplexOutputType() {
+        Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
+        functions.put("complexOutputFunction", createMockFunctionRunner(SimpleInput.class, SimpleOutput.class));
+
+        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+
+        assertThat(schemas).hasSize(1);
+        QueryRunnerSchema schema = schemas.get(0);
+        FunctionOutputType outputType = schema.getOutput();
+        DataType outputDataType = outputType.accept(FunctionOutputType.Visitor.<DataType>builder()
+                .single(single -> single.getDataType())
+                .void_(_void -> null)
+                .throwOnUnknown()
+                .build());
+
+        // Verify output is an anonymous custom type with the expected fields
+        Map<CustomTypeFieldName, DataType> expectedFields = new HashMap<>();
+        expectedFields.put(CustomTypeFieldName.of("success"), DataType.boolean_(BooleanType.of()));
+        expectedFields.put(CustomTypeFieldName.of("message"), DataType.string(StringType.of()));
+        DataType expectedOutput = DataType.anonymousCustomType(
+                AnonymousCustomType.builder().fields(expectedFields).build());
+        assertThat(outputDataType).isEqualTo(expectedOutput);
     }
 }

@@ -74,7 +74,7 @@ public final class FunctionRunnerSchemaConverter {
 
     private FunctionRunnerSchemaConverter() {}
 
-    public List<QueryRunnerSchema> getFunctionSchemas(Map<String, FunctionRunner<?, ?>> functions) {
+    public static List<QueryRunnerSchema> getFunctionSchemas(Map<String, FunctionRunner<?, ?>> functions) {
         return EntryStream.of(functions)
                 .map(function -> {
                     FunctionRunner<?, ?> functionRunner = function.getValue();
