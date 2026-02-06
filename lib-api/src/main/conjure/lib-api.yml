@@ -282,15 +282,15 @@ types:
         docs: Indicates no output value is returned from the defined function.
         fields: { }
 
-      QueryRunnerSchemaParseIssue:
+      FunctionRunnerSchemaParseIssue:
         values:
           - CANNOT_PARSE_INPUTS
           - CANNOT_PARSE_OUTPUT
-      QueryRunnerSchema:
+      FunctionRunnerSchema:
         fields:
           functionName:
             safety: unsafe
             type: string
           inputs: list<FunctionInputType>
           output: FunctionOutputType
-          issues: list<QueryRunnerSchemaParseIssue>
+          issues: list<FunctionRunnerSchemaParseIssue>

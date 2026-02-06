@@ -27,16 +27,15 @@ import com.palantir.computemodules.functions.api.DataType;
 import com.palantir.computemodules.functions.api.DateType;
 import com.palantir.computemodules.functions.api.DoubleType;
 import com.palantir.computemodules.functions.api.FloatType;
+import com.palantir.computemodules.functions.api.FunctionInputType;
+import com.palantir.computemodules.functions.api.FunctionOutputType;
+import com.palantir.computemodules.functions.api.FunctionRunnerSchema;
+import com.palantir.computemodules.functions.api.FunctionRunnerSchemaParseIssue;
 import com.palantir.computemodules.functions.api.IntegerType;
 import com.palantir.computemodules.functions.api.ListType;
 import com.palantir.computemodules.functions.api.LongType;
 import com.palantir.computemodules.functions.api.MapType;
 import com.palantir.computemodules.functions.api.OptionalType;
-import com.palantir.computemodules.functions.api.FunctionInputType;
-import com.palantir.computemodules.functions.api.FunctionOutputType;
-import com.palantir.computemodules.functions.api.InputName;
-import com.palantir.computemodules.functions.api.QueryRunnerSchema;
-import com.palantir.computemodules.functions.api.QueryRunnerSchemaParseIssue;
 import com.palantir.computemodules.functions.api.SetType;
 import com.palantir.computemodules.functions.api.ShortType;
 import com.palantir.computemodules.functions.api.StringType;
@@ -334,10 +333,10 @@ class FunctionRunnerSchemaConverterTest {
         Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
         functions.put("testFunction", createMockFunctionRunner(SimpleInput.class, SimpleOutput.class));
 
-        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+        List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).hasSize(1);
-        QueryRunnerSchema schema = schemas.get(0);
+        FunctionRunnerSchema schema = schemas.get(0);
         assertThat(schema.getFunctionName()).isEqualTo("testFunction");
         assertThat(schema.getIssues()).isEmpty();
 
@@ -364,11 +363,11 @@ class FunctionRunnerSchemaConverterTest {
         functions.put("function1", createMockFunctionRunner(SimpleInput.class, String.class));
         functions.put("function2", createMockFunctionRunner(ParentTestClass.class, Integer.class));
 
-        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+        List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).hasSize(2);
         Set<String> functionNames =
-                new HashSet<>(schemas.stream().map(QueryRunnerSchema::getFunctionName).toList());
+                new HashSet<>(schemas.stream().map(FunctionRunnerSchema::getFunctionName).toList());
         assertThat(functionNames).containsExactlyInAnyOrder("function1", "function2");
     }
 
@@ -376,7 +375,7 @@ class FunctionRunnerSchemaConverterTest {
     public void testGetFunctionSchemasWithEmptyMap() {
         Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
 
-        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+        List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).isEmpty();
     }
@@ -386,12 +385,12 @@ class FunctionRunnerSchemaConverterTest {
         Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
         functions.put("atomicInputFunction", createMockFunctionRunner(String.class, SimpleOutput.class));
 
-        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+        List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).hasSize(1);
-        QueryRunnerSchema schema = schemas.get(0);
+        FunctionRunnerSchema schema = schemas.get(0);
         assertThat(schema.getFunctionName()).isEqualTo("atomicInputFunction");
-        assertThat(schema.getIssues()).containsExactly(QueryRunnerSchemaParseIssue.CANNOT_PARSE_INPUTS);
+        assertThat(schema.getIssues()).containsExactly(FunctionRunnerSchemaParseIssue.CANNOT_PARSE_INPUTS);
         assertThat(schema.getInputs()).isEmpty();
     }
 
@@ -400,10 +399,10 @@ class FunctionRunnerSchemaConverterTest {
         Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
         functions.put("testFunction", createMockFunctionRunner(SimpleInput.class, String.class));
 
-        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+        List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).hasSize(1);
-        QueryRunnerSchema schema = schemas.get(0);
+        FunctionRunnerSchema schema = schemas.get(0);
         for (FunctionInputType input : schema.getInputs()) {
             assertThat(input.getRequired()).isTrue();
         }
@@ -414,10 +413,10 @@ class FunctionRunnerSchemaConverterTest {
         Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
         functions.put("stringOutputFunction", createMockFunctionRunner(SimpleInput.class, String.class));
 
-        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+        List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).hasSize(1);
-        QueryRunnerSchema schema = schemas.get(0);
+        FunctionRunnerSchema schema = schemas.get(0);
         FunctionOutputType outputType = schema.getOutput();
         DataType outputDataType = outputType.accept(FunctionOutputType.Visitor.<DataType>builder()
                 .single(single -> single.getDataType())
@@ -432,10 +431,10 @@ class FunctionRunnerSchemaConverterTest {
         Map<String, FunctionRunner<?, ?>> functions = new HashMap<>();
         functions.put("complexOutputFunction", createMockFunctionRunner(SimpleInput.class, SimpleOutput.class));
 
-        List<QueryRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
+        List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).hasSize(1);
-        QueryRunnerSchema schema = schemas.get(0);
+        FunctionRunnerSchema schema = schemas.get(0);
         FunctionOutputType outputType = schema.getOutput();
         DataType outputDataType = outputType.accept(FunctionOutputType.Visitor.<DataType>builder()
                 .single(single -> single.getDataType())

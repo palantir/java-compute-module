@@ -27,14 +27,14 @@ import com.palantir.computemodules.functions.api.DoubleType;
 import com.palantir.computemodules.functions.api.FloatType;
 import com.palantir.computemodules.functions.api.FunctionInputType;
 import com.palantir.computemodules.functions.api.FunctionOutputType;
+import com.palantir.computemodules.functions.api.FunctionRunnerSchema;
+import com.palantir.computemodules.functions.api.FunctionRunnerSchemaParseIssue;
 import com.palantir.computemodules.functions.api.InputName;
 import com.palantir.computemodules.functions.api.IntegerType;
 import com.palantir.computemodules.functions.api.ListType;
 import com.palantir.computemodules.functions.api.LongType;
 import com.palantir.computemodules.functions.api.MapType;
 import com.palantir.computemodules.functions.api.OptionalType;
-import com.palantir.computemodules.functions.api.QueryRunnerSchema;
-import com.palantir.computemodules.functions.api.QueryRunnerSchemaParseIssue;
 import com.palantir.computemodules.functions.api.SetType;
 import com.palantir.computemodules.functions.api.ShortType;
 import com.palantir.computemodules.functions.api.SingleOutputType;
@@ -74,13 +74,13 @@ public final class FunctionRunnerSchemaConverter {
 
     private FunctionRunnerSchemaConverter() {}
 
-    public static List<QueryRunnerSchema> getFunctionSchemas(Map<String, FunctionRunner<?, ?>> functions) {
+    public static List<FunctionRunnerSchema> getFunctionSchemas(Map<String, FunctionRunner<?, ?>> functions) {
         return EntryStream.of(functions)
                 .map(function -> {
                     FunctionRunner<?, ?> functionRunner = function.getValue();
                     Optional<Map<String, DataType>> maybeInputTypes = classToDataTypes(functionRunner.inputClass());
                     Optional<DataType> maybeOutputType = classToDataType(functionRunner.outputClass());
-                    List<QueryRunnerSchemaParseIssue> issues = new ArrayList<>();
+                    List<FunctionRunnerSchemaParseIssue> issues = new ArrayList<>();
                     List<FunctionInputType> inputTypes;
                     if (maybeInputTypes.isPresent()) {
                         inputTypes = maybeInputTypes.get().entrySet().stream()
@@ -91,7 +91,7 @@ public final class FunctionRunnerSchemaConverter {
                                         .build())
                                 .toList();
                     } else {
-                        issues.add(QueryRunnerSchemaParseIssue.CANNOT_PARSE_INPUTS);
+                        issues.add(FunctionRunnerSchemaParseIssue.CANNOT_PARSE_INPUTS);
                         inputTypes = new ArrayList<>();
                     }
                     FunctionOutputType outputType;
@@ -100,12 +100,12 @@ public final class FunctionRunnerSchemaConverter {
                                 .dataType(maybeOutputType.get())
                                 .build());
                     } else {
-                        issues.add(QueryRunnerSchemaParseIssue.CANNOT_PARSE_OUTPUT);
+                        issues.add(FunctionRunnerSchemaParseIssue.CANNOT_PARSE_OUTPUT);
                         outputType = FunctionOutputType.single(SingleOutputType.builder()
                                 .dataType(DataType.unknown("unknown", UnknownType.of()))
                                 .build());
                     }
-                    return QueryRunnerSchema.builder()
+                    return FunctionRunnerSchema.builder()
                             .functionName(function.getKey())
                             .output(outputType)
                             .addAllInputs(inputTypes)
