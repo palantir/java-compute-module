@@ -16,6 +16,7 @@
 package com.palantir.computemodules.client;
 
 import com.palantir.computemodules.client.config.EnvVars;
+import com.palantir.computemodules.functions.api.FunctionRunnerSchema;
 import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.logger.SafeLogger;
 import com.palantir.logsafe.logger.SafeLoggerFactory;
@@ -27,6 +28,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.List;
 import java.util.Optional;
 
 public final class ComputeModuleClient implements Client {
@@ -83,4 +85,7 @@ public final class ComputeModuleClient implements Client {
             log.error("Failed to post result", SafeArg.of("jobId", jobId), e);
         }
     }
+
+    @Override
+    public void postSchemas(List<FunctionRunnerSchema> functionSchemas) {}
 }

@@ -29,6 +29,7 @@ import com.palantir.computemodules.functions.FunctionRunner;
 import com.palantir.computemodules.functions.results.Failed;
 import com.palantir.computemodules.functions.results.Ok;
 import com.palantir.computemodules.functions.results.Result;
+import com.palantir.computemodules.functions.schema.FunctionRunnerSchemaConverter;
 import com.palantir.computemodules.functions.serde.DefaultDeserializer;
 import com.palantir.computemodules.functions.serde.DefaultSerializer;
 import com.palantir.logsafe.SafeArg;
@@ -68,6 +69,7 @@ public final class ComputeModule {
      * Starts the client polling loop. This is blocking, run in the background needed.
      */
     public Void start() {
+        client.postSchemas(FunctionRunnerSchemaConverter.getFunctionSchemas(functions));
         while (true) {
             client.getJob().ifPresent(job -> {
                 ListenableFuture<Result> future = executor.submit(() -> execute(job));

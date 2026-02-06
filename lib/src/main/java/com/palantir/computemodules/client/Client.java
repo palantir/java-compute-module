@@ -15,7 +15,9 @@
  */
 package com.palantir.computemodules.client;
 
+import com.palantir.computemodules.functions.api.FunctionRunnerSchema;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 
 public interface Client {
@@ -23,4 +25,6 @@ public interface Client {
     Optional<ComputeModuleJob> getJob();
 
     void postResult(String jobId, InputStream result);
+
+    void postSchemas(List<FunctionRunnerSchema> functionSchemas);
 }
