@@ -16,23 +16,31 @@
 package com.palantir.computemodules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.palantir.computemodules.client.TestClient;
 import com.palantir.computemodules.functions.Context;
+import com.palantir.computemodules.functions.api.FunctionRunnerSchema;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ComputeModuleTest {
 
     private static final ListeningExecutorService executor =
             MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(1));
-    private static final TestClient testClient = new TestClient();
+    private static final TestClient testClient = spy(new TestClient());
     private static final ComputeModule cm = ComputeModule.builder()
             .add(ComputeModuleTest::dub, Integer.class, Integer.class, "dub")
             .add(ComputeModuleTest::hello, String.class, String.class, "hello")
@@ -44,6 +52,20 @@ class ComputeModuleTest {
     @BeforeAll
     static void before() {
         executor.execute(cm::start);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void test_postSchemas_called_on_startup() {
+        ArgumentCaptor<List<FunctionRunnerSchema>> captor = ArgumentCaptor.forClass(List.class);
+        verify(testClient, timeout(1000)).postSchemas(captor.capture());
+
+        List<FunctionRunnerSchema> schemas = captor.getValue();
+        assertThat(schemas).hasSize(4);
+
+        Set<String> functionNames =
+                schemas.stream().map(FunctionRunnerSchema::getFunctionName).collect(Collectors.toSet());
+        assertThat(functionNames).containsExactlyInAnyOrder("dub", "hello", "mult", "error");
     }
 
     @Test

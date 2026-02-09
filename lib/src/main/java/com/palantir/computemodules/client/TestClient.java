@@ -59,7 +59,9 @@ public final class TestClient implements Client {
     }
 
     @Override
-    public void postSchemas(List<FunctionRunnerSchema> functionSchemas) {}
+    public void postSchemas(List<FunctionRunnerSchema> _functionSchemas) {
+        // No-op for testing
+    }
 
     /*
      * Executes a test job and returns a result stream
