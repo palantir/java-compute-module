@@ -366,8 +366,8 @@ class FunctionRunnerSchemaConverterTest {
         List<FunctionRunnerSchema> schemas = FunctionRunnerSchemaConverter.getFunctionSchemas(functions);
 
         assertThat(schemas).hasSize(2);
-        Set<String> functionNames =
-                new HashSet<>(schemas.stream().map(FunctionRunnerSchema::getFunctionName).toList());
+        Set<String> functionNames = new HashSet<>(
+                schemas.stream().map(FunctionRunnerSchema::getFunctionName).toList());
         assertThat(functionNames).containsExactlyInAnyOrder("function1", "function2");
     }
 
