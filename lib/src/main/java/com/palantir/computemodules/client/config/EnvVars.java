@@ -27,6 +27,7 @@ public final class EnvVars {
         POST_RESULT_URI(StringEnvVar.of("POST_RESULT_URI")),
         DEFAULT_CA_PATH(StringEnvVar.of("DEFAULT_CA_PATH")),
         MODULE_AUTH_TOKEN(FileEnvVar.of("MODULE_AUTH_TOKEN")),
+        RUNTIME_HOST(StringEnvVar.of("RUNTIME_HOST")),
         ;
 
         public String get() {
