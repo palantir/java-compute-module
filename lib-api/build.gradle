@@ -15,4 +15,3 @@
  */
 
 apply plugin: 'com.palantir.conjure'
-apply plugin: 'com.palantir.external-publish-conjure'
