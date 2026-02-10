@@ -2,9 +2,11 @@
 
 com.fasterxml.jackson.core:jackson-annotations:2.21 (6 constraints: 9e592179)
 
-com.fasterxml.jackson.core:jackson-core:2.21.0 (3 constraints: 0d390d0e)
+com.fasterxml.jackson.core:jackson-core:2.21.0 (4 constraints: 074ff901)
 
-com.fasterxml.jackson.core:jackson-databind:2.21.0 (5 constraints: 8e4963a8)
+com.fasterxml.jackson.core:jackson-databind:2.21.0 (6 constraints: 885fd3dc)
+
+com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.0 (1 constraints: 3c05443b)
 
 com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.0 (1 constraints: 11051436)
 
