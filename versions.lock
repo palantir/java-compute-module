@@ -1,10 +1,10 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file. Blank lines are to minimize merge conflicts.
 
-com.fasterxml.jackson.core:jackson-annotations:2.21 (6 constraints: 9e592179)
+com.fasterxml.jackson.core:jackson-annotations:2.21 (6 constraints: a1599d79)
 
-com.fasterxml.jackson.core:jackson-core:2.21.0 (4 constraints: 074ff901)
+com.fasterxml.jackson.core:jackson-core:2.21.0 (4 constraints: 074ffb01)
 
-com.fasterxml.jackson.core:jackson-databind:2.21.0 (6 constraints: 885fd3dc)
+com.fasterxml.jackson.core:jackson-databind:2.21.0 (6 constraints: 885fd9dc)
 
 com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.0 (1 constraints: 3c05443b)
 
@@ -22,25 +22,25 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-com.palantir.conjure.java:conjure-lib:8.69.0 (1 constraints: 3e055d3b)
+com.palantir.conjure.java:conjure-lib:8.70.0 (1 constraints: 3e055d3b)
 
-com.palantir.conjure.java.api:errors:2.68.0 (1 constraints: 2810b6a9)
+com.palantir.conjure.java.api:errors:2.69.0 (1 constraints: 2910b9a9)
 
-com.palantir.ri:resource-identifier:2.12.0 (1 constraints: 1d1090a9)
+com.palantir.ri:resource-identifier:2.13.0 (1 constraints: 1e1093a9)
 
-com.palantir.safe-logging:logger:3.11.0 (3 constraints: 6d21659c)
+com.palantir.safe-logging:logger:3.11.0 (3 constraints: bf21c7d7)
 
 com.palantir.safe-logging:logger-slf4j:3.11.0 (1 constraints: 300e8a50)
 
 com.palantir.safe-logging:logger-spi:3.11.0 (2 constraints: 6f1e0ab0)
 
-com.palantir.safe-logging:preconditions:3.11.0 (6 constraints: 8c504e3d)
+com.palantir.safe-logging:preconditions:3.11.0 (6 constraints: 3151e952)
 
-com.palantir.safe-logging:safe-logging:3.11.0 (6 constraints: 275ea724)
+com.palantir.safe-logging:safe-logging:3.11.0 (6 constraints: 7a5ea9a7)
 
-com.palantir.tokens:auth-tokens:3.21.0 (1 constraints: 1e1097a9)
+com.palantir.tokens:auth-tokens:3.22.0 (1 constraints: 1f109aa9)
 
-com.palantir.tritium:tritium-ids:0.122.0 (1 constraints: f80f88a6)
+com.palantir.tritium:tritium-ids:0.124.0 (1 constraints: fa0f8ea6)
 
 one.util:streamex:0.8.4 (1 constraints: 0e050736)
 
