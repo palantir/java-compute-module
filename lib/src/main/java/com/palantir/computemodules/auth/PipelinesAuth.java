@@ -29,6 +29,7 @@ public final class PipelinesAuth {
     // Produces a bearer token that can be used to make calls to access pipeline resources.
     // This is only available in pipeline mode.
     public static String retrievePipelineToken() {
+        // TODO(.): Replace with EnvVars.Reserved
         String tokenFilePath = System.getenv("BUILD2_TOKEN");
         if (tokenFilePath == null || tokenFilePath.isEmpty()) {
             throw new SafeRuntimeException(

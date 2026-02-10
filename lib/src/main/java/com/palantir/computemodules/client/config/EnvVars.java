@@ -24,10 +24,15 @@ import java.util.Optional;
 public final class EnvVars {
     public enum Reserved {
         GET_JOB_URI(StringEnvVar.of("GET_JOB_URI")),
+        GET_JOB_URI_V2(StringEnvVar.of("GET_JOB_URI_V2")),
         POST_RESULT_URI(StringEnvVar.of("POST_RESULT_URI")),
+        POST_RESULT_URI_V2(StringEnvVar.of("POST_RESULT_URI_V2")),
+        POST_SCHEMA_URI_V2(StringEnvVar.of("POST_SCHEMA_URI_V2")),
         DEFAULT_CA_PATH(StringEnvVar.of("DEFAULT_CA_PATH")),
         MODULE_AUTH_TOKEN(FileEnvVar.of("MODULE_AUTH_TOKEN")),
         RUNTIME_HOST(StringEnvVar.of("RUNTIME_HOST")),
+        CLIENT_ID(StringEnvVar.of("CLIENT_ID")),
+        CLIENT_SECRET(StringEnvVar.of("CLIENT_SECRET")),
         ;
 
         public String get() {

@@ -41,7 +41,6 @@ public final class ComputeModuleClient implements Client {
     private static final int POST_SCHEMAS_MAX_ATTEMPTS = 5;
     private static final ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
 
-    private final String runtimeHost;
     private final HttpClient client;
     private final HttpRequest getRequest;
     private final HttpRequest.Builder postRequest;
@@ -49,17 +48,12 @@ public final class ComputeModuleClient implements Client {
     private final TaggedJobDeserializer deserializer = new TaggedJobDeserializer();
 
     public ComputeModuleClient() {
-        String moduleAuthToken = EnvVars.Reserved.MODULE_AUTH_TOKEN.get();
-        this.runtimeHost = EnvVars.Reserved.RUNTIME_HOST.get();
         this.getRequest = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("http://%s:8946/job", runtimeHost)))
-                .header("Module-Auth-Token", moduleAuthToken)
+                .uri(URI.create(EnvVars.Reserved.GET_JOB_URI_V2.get()))
                 .build();
-        this.postRequest = HttpRequest.newBuilder()
-                .header("Module-Auth-Token", moduleAuthToken)
-                .header("Content-Type", "application/octet-stream");
+        this.postRequest = HttpRequest.newBuilder().header("Content-Type", "application/octet-stream");
         this.postSchemasRequest = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("http://%s:8946/schemas", runtimeHost)))
+                .uri(URI.create(EnvVars.Reserved.POST_SCHEMA_URI_V2.get()))
                 .header("Content-Type", "application/json");
         this.client = HttpClient.newBuilder().build();
     }
@@ -89,7 +83,7 @@ public final class ComputeModuleClient implements Client {
     public void postResult(String jobId, InputStream result) {
         HttpRequest request = postRequest
                 .copy()
-                .uri(URI.create(String.format("http://%s:8946/results/%s", runtimeHost, jobId)))
+                .uri(URI.create(String.format("%s/%s", EnvVars.Reserved.POST_RESULT_URI_V2.get(), jobId)))
                 .POST(BodyPublishers.ofInputStream(() -> result))
                 .build();
         try {
