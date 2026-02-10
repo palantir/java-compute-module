@@ -16,7 +16,9 @@
 package com.palantir.computemodules.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palantir.computemodules.functions.api.FunctionRunnerSchema;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,6 +56,11 @@ public final class TestClient implements Client {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void postSchemas(List<FunctionRunnerSchema> _functionSchemas) {
+        // No-op for testing
     }
 
     /*

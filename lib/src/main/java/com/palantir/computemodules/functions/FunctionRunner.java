@@ -43,6 +43,14 @@ public final class FunctionRunner<I, O> {
         this.serializer = serializer;
     }
 
+    public Class<I> inputClass() {
+        return inputType;
+    }
+
+    public Class<O> outputClass() {
+        return outputType;
+    }
+
     @Unsafe
     public Result run(Context context, Object input) {
         I deserializedInput = deserializer.deserialize(input, inputType);

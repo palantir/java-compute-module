@@ -1,0 +1,296 @@
+types:
+  imports:
+    BigDecimal:
+      external:
+        java: java.math.BigDecimal
+  definitions:
+    default-package: com.palantir.computemodules.functions.api
+    objects:
+      DataType:
+        docs: |
+          All types supported by the Function Registry.
+        union:
+          boolean: BooleanType
+          integer: IntegerType
+          long: LongType
+          float: FloatType
+          double: DoubleType
+          decimal: DecimalType
+          string: StringType
+          date: DateType
+          timestamp: TimestampType
+          list: ListType
+          set: SetType
+          map: MapType
+          optionalType: OptionalType
+          anonymousCustomType: AnonymousCustomType
+          byte: ByteType
+          short: ShortType
+      BooleanType:
+        fields: {}
+      IntegerType:
+        fields: {}
+      LongType:
+        fields: {}
+      FloatType:
+        fields: {}
+      DoubleType:
+        fields: {}
+      DecimalType:
+        docs: |
+          A function registered with a Decimal type input or output must provide guarantees that it can correctly handle
+          any decimal value within the valid range as specified by the field's scale and precision.
+          
+          For example, a function registered with a Decimal input of precision 5 and scale 3 should be able to correctly
+          handle any decimal value between 0.000 and 99.999, inclusive. 
+          
+          Note that numbers such as 3 and 4.1 are inside of this valid range even though their values are not written
+          with precision 5 and scale 3.
+        fields:
+          precision:
+            docs: |
+              If present, a decimal field's precision is the maximum number of digits in the number, excluding leading 
+              zeros to the left of the decimal point and trailing zeros to the right of the decimal point.
+              
+              If unspecified, the decimal field has unbounded precision.
+              
+              For example, the value 10.45 has precision 4 even though it could be represented as 010.450.
+              Provided the field's scale is large enough (see docs below), the value 10.45 is valid for a decimal field
+              with precision 4 or greater.
+            type: optional<integer>
+            safety: safe
+          scale:
+            docs: |
+              If present, a decimal field's scale is the maximum number of digits to the right of the decimal point, 
+              excluding trailing zeros. 
+              
+              If unspecified, the decimal field has unbounded scale.
+
+              For example, the value 10.45 has scale 2 even though it could be represented as 10.450.
+              Provided the field's precision is large enough (see docs above), the value 10.45 is valid for a decimal
+              field with precision 2 or greater.
+            type: optional<integer>
+            safety: safe
+      StringType:
+        fields: {}
+      DateType:
+        fields: {}
+      TimestampType:
+        fields: {}
+      ByteType:
+        fields: {}
+      ShortType:
+        fields: {}
+      ListType:
+        fields:
+          elementsType: DataType
+      SetType:
+        fields:
+          elementsType: DataType
+      MapType:
+        fields:
+          keysType: DataType
+          valuesType: DataType
+      OptionalType:
+        fields:
+          wrappedType: DataType
+      AnonymousCustomType:
+        fields:
+          fields: map<CustomTypeFieldName, DataType>
+          fieldMetadata:
+            type: optional<map<CustomTypeFieldName, CustomTypeFieldMetadata>>
+            docs: |
+              When this map is present, it is expected that metadata is provided for every field.
+      UnknownType:
+        fields: {}
+
+
+      CustomTypeFieldName:
+        alias: string
+        safety: unsafe
+      CustomTypeFieldMetadata:
+        fields:
+          required:
+            type: boolean
+            safety: safe
+          documentation: optional<Documentation>
+      Documentation:
+        alias: string
+        safety: unsafe
+
+      InputName:
+        alias: string
+        safety: unsafe
+      ObjectTypeId:
+        alias: string
+        safety: unsafe
+      PropertyId:
+        alias: string
+        safety: unsafe
+      ObjectPrimaryKey:
+        alias: map<PropertyId, any>
+      Constraint:
+        union:
+          integer: IntegerRangeConstraint
+          long: LongRangeConstraint
+          float: FloatRangeConstraint
+          double: DoubleRangeConstraint
+          decimal: DecimalRangeConstraint
+          date: DateRangeConstraint
+          timestamp: TimeStampRangeConstraint
+
+      IntegerRangeConstraint:
+        fields:
+          min:
+            type: optional<integer>
+            safety: unsafe
+          max:
+            type: optional<integer>
+            safety: unsafe
+
+      LongRangeConstraint:
+        fields:
+          min:
+            type: optional<safelong>
+            safety: unsafe
+          max:
+            type: optional<safelong>
+            safety: unsafe
+
+      FloatRangeConstraint:
+        fields:
+          min:
+            type: optional<double>
+            safety: unsafe
+          max:
+            type: optional<double>
+            safety: unsafe
+
+      DoubleRangeConstraint:
+        fields:
+          min:
+            type: optional<double>
+            safety: unsafe
+          max:
+            type: optional<double>
+            safety: unsafe
+
+      DecimalRangeConstraint:
+        fields:
+          min: optional<BigDecimal>
+          max: optional<BigDecimal>
+
+      DateRangeConstraint:
+        fields:
+          min:
+            docs: If present, this should be an ISO 8601 date.
+            type: optional<string>
+            safety: unsafe
+          max:
+            docs: If present, this should be an ISO 8601 date.
+            type: optional<string>
+            safety: unsafe
+
+      TimeStampRangeConstraint:
+        fields:
+          min:
+            type: optional<datetime>
+            safety: unsafe
+          max:
+            type: optional<datetime>
+            safety: unsafe
+
+      # Values
+      Value:
+        union:
+          boolean: BooleanValue
+          integer: IntegerValue
+          long: LongValue
+          float: FloatValue
+          double: DoubleValue
+          string: StringValue
+          date: DateValue
+          timestamp: TimestampValue
+          list: ListValue
+          set: SetValue
+          objectLocator: ObjectLocatorValue
+          null: NullValue
+
+      BooleanValue:
+        alias: boolean
+        safety: unsafe
+      IntegerValue:
+        alias: integer
+        safety: unsafe
+      LongValue:
+        alias: safelong
+        safety: unsafe
+      FloatValue:
+        alias: double
+        safety: unsafe
+      DoubleValue:
+        alias: double
+        safety: unsafe
+      StringValue:
+        alias: string
+        safety: unsafe
+      DateValue:
+        alias: string
+        safety: unsafe
+      TimestampValue:
+        alias: datetime
+        safety: unsafe
+      ListValue:
+        fields:
+          values: list<Value>
+      SetValue:
+        fields:
+          values: set<Value>
+      ObjectLocatorValue:
+        fields:
+          typeId: ObjectTypeId
+          primaryKey: ObjectPrimaryKey
+      NullValue:
+        fields: {}
+
+      FunctionInputType:
+        fields:
+          name: InputName
+          description:
+            type: optional<string>
+            safety: unsafe
+          dataType: DataType
+          required:
+            type: boolean
+            safety: safe
+          defaultValue: optional<Value>
+          constraints: list<Constraint>
+
+      FunctionOutputType:
+        union:
+          single: SingleOutputType
+          void: VoidOutputType
+
+      SingleOutputType:
+        fields:
+          description:
+            type: optional<string>
+            safety: unsafe
+          dataType: DataType
+
+      VoidOutputType:
+        docs: Indicates no output value is returned from the defined function.
+        fields: { }
+
+      FunctionRunnerSchemaParseIssue:
+        values:
+          - CANNOT_PARSE_INPUTS
+          - CANNOT_PARSE_OUTPUT
+      FunctionRunnerSchema:
+        fields:
+          functionName:
+            safety: unsafe
+            type: string
+          inputs: list<FunctionInputType>
+          output: FunctionOutputType
+          issues: list<FunctionRunnerSchemaParseIssue>
