@@ -204,9 +204,10 @@ class FunctionRunnerSchemaConverterTest {
         ParentTestClass parent = new ParentTestClass(0, "parentFieldOne", child);
         Optional<Map<String, DataType>> dTypes = FunctionRunnerSchemaConverter.classToDataTypes(parent.getClass());
         assertThat(dTypes).isNotEmpty();
-        assertThat(dTypes.orElseThrow().size()).isEqualTo(3);
+        assertThat(dTypes.orElseThrow()).hasSize(3);
         assertThat(dTypes.orElseThrow().keySet())
-                .isEqualTo(new HashSet<>(Arrays.asList("parentFieldOne", "parentFieldTwo", "child")));
+                .containsExactlyInAnyOrderElementsOf(
+                        new HashSet<>(Arrays.asList("parentFieldOne", "parentFieldTwo", "child")));
         assertThat(dTypes.orElseThrow().get("parentFieldOne")).isEqualTo(DataType.integer(IntegerType.of()));
         assertThat(dTypes.orElseThrow().get("parentFieldTwo")).isEqualTo(DataType.string(StringType.of()));
         assertThat(dTypes.orElseThrow().get("child")).isEqualTo(expectedChildTestClassOutput());
