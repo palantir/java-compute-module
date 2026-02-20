@@ -32,6 +32,7 @@ import com.palantir.computemodules.functions.results.Result;
 import com.palantir.computemodules.functions.schema.FunctionRunnerSchemaConverter;
 import com.palantir.computemodules.functions.serde.DefaultDeserializer;
 import com.palantir.computemodules.functions.serde.DefaultSerializer;
+import com.palantir.computemodules.logging.LogContext;
 import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.Unsafe;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
@@ -69,16 +70,27 @@ public final class ComputeModule {
      * Starts the client polling loop. This is blocking, run in the background needed.
      */
     public Void start() {
+        LogContext.initThread();
         client.postSchemas(FunctionRunnerSchemaConverter.getFunctionSchemas(functions));
         while (true) {
             client.getJob().ifPresent(job -> {
-                ListenableFuture<Result> future = executor.submit(() -> execute(job));
+                ListenableFuture<Result> future = executor.submit(() -> {
+                    LogContext.initThread();
+                    LogContext.setJobId(job.jobId());
+                    try {
+                        return execute(job);
+                    } finally {
+                        LogContext.clearJobId();
+                    }
+                });
                 Futures.addCallback(
                         future,
                         new FutureCallback<>() {
 
                             @Override
                             public void onSuccess(@Nullable Result result) {
+                                LogContext.initThread();
+                                LogContext.setJobId(job.jobId());
                                 if (null == result) {
                                     client.postResult(
                                             job.jobId(), serializeNullValueReceived(job.jobId(), job.queryType()));
@@ -92,6 +104,8 @@ public final class ComputeModule {
 
                             @Override
                             public void onFailure(@NotNull Throwable throwable) {
+                                LogContext.initThread();
+                                LogContext.setJobId(job.jobId());
                                 Failed failed = new Failed(job.jobId(), new Exception(throwable));
                                 client.postResult(failed.jobId(), serializeException(failed));
                             }
