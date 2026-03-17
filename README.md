@@ -151,7 +151,7 @@ The SDK configures logging automatically when `start()` is called. By default it
 
 - Outputs to **STDOUT** using the SLS (`service.1`) JSON layout
 - Sets the root log level to **INFO**
-- Automatically includes `session_id`, `job_id`, and `pid` in every log line via MDC
+- Automatically includes `session_id` (session_id == replica ID), `job_id`, and `pid` in every log line via MDC
 
 Example log output:
 ```json
