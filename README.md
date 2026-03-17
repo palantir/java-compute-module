@@ -145,7 +145,49 @@ String token = refreshingToken.getToken();
 ```
 ---
 
-### 5. Build and Deploy with Docker
+### 5. Logging
+
+The SDK configures logging automatically when `start()` is called. By default it:
+
+- Outputs to **STDOUT** using the SLS (`service.1`) JSON layout
+- Sets the root log level to **INFO**
+- Automatically includes `session_id` (session_id == replica ID), `job_id`, and `pid` in every log line via MDC
+
+Example log output:
+```json
+{
+  "type": "service.1",
+  "level": "INFO",
+  "time": "2025-01-15T12:00:00Z",
+  "origin": "com.example.App",
+  "thread": "main",
+  "message": "Processing request",
+  "params": { "session_id": "abc-123", "job_id": "job-456", "pid": "42" }
+}
+```
+
+#### Overriding the log layout
+
+To customize the log output format, pass a Logback `Layout` to the builder via `withLayout()`:
+
+```java
+import ch.qos.logback.classic.PatternLayout;
+
+PatternLayout layout = new PatternLayout();
+layout.setPattern("%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n");
+
+ComputeModule.builder()
+        .withLayout(layout)
+        .add(App::hello, String.class, String.class, "hello")
+        .build()
+        .start();
+```
+
+> **Note:** If you override the layout, you lose the SLS JSON formatting and the automatic `session_id`/`job_id`/`pid` fields unless you include them yourself.
+
+---
+
+### 6. Build and Deploy with Docker
 
 Containerize your application and then upload the resulting Docker image to Foundry. Once uploaded, you can reference your newly created image in a compute module. Example of Dockerfile:
 
