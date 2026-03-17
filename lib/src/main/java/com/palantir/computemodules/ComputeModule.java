@@ -15,6 +15,8 @@
  */
 package com.palantir.computemodules;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Layout;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -33,6 +35,8 @@ import com.palantir.computemodules.functions.schema.FunctionRunnerSchemaConverte
 import com.palantir.computemodules.functions.serde.DefaultDeserializer;
 import com.palantir.computemodules.functions.serde.DefaultSerializer;
 import com.palantir.computemodules.logging.LogContext;
+import com.palantir.computemodules.logging.LoggingConfiguration;
+import com.palantir.computemodules.logging.SlsLayout;
 import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.Unsafe;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
@@ -60,6 +64,7 @@ public final class ComputeModule {
     private final Map<String, FunctionRunner<?, ?>> functions;
     private final Client client;
     private final ListeningExecutorService executor;
+    private final Layout<ILoggingEvent> layout;
     private static final String NULL_VALUE_FROM_FUNCTION_RUN = "No value received from function execution.";
 
     public static ComputeModuleBuilder builder() {
@@ -70,6 +75,7 @@ public final class ComputeModule {
      * Starts the client polling loop. This is blocking, run in the background needed.
      */
     public Void start() {
+        LoggingConfiguration.configure(layout);
         LogContext.initThread();
         client.postSchemas(FunctionRunnerSchemaConverter.getFunctionSchemas(functions));
         while (true) {
@@ -159,10 +165,14 @@ public final class ComputeModule {
     }
 
     private ComputeModule(
-            Client client, ListeningExecutorService executor, Map<String, FunctionRunner<?, ?>> functions) {
+            Client client,
+            ListeningExecutorService executor,
+            Map<String, FunctionRunner<?, ?>> functions,
+            Layout<ILoggingEvent> layout) {
         this.client = client;
         this.executor = executor;
         this.functions = functions;
+        this.layout = layout;
     }
 
     public static final class ComputeModuleBuilder {
@@ -171,6 +181,7 @@ public final class ComputeModule {
                 Optional.empty(); // ComputeModuleClient construction is deferred due to env vars
         private ListeningExecutorService executor =
                 MoreExecutors.listeningDecorator(Executors.newVirtualThreadPerTaskExecutor());
+        private Layout<ILoggingEvent> layout = new SlsLayout();
 
         private ComputeModuleBuilder() {
             functions = new HashMap<>();
@@ -214,8 +225,17 @@ public final class ComputeModule {
             return this;
         }
 
+        /*
+         * Not required, if unused the default SLS JSON layout will be used. Provide a custom Logback layout
+         * to change the log output format.
+         */
+        public ComputeModuleBuilder withLayout(Layout<ILoggingEvent> newLayout) {
+            this.layout = newLayout;
+            return this;
+        }
+
         public ComputeModule build() {
-            return new ComputeModule(client.orElseGet(() -> new ComputeModuleClient()), executor, functions);
+            return new ComputeModule(client.orElseGet(() -> new ComputeModuleClient()), executor, functions, layout);
         }
     }
 }

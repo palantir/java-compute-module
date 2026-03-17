@@ -24,8 +24,9 @@
     <suppress files="\.(bdr|eot|gif|gzip|jar|json|otf|png|svg|ttf|woff|zip)$" checks="FileTabCharacter" />
     <suppress files="\.(bdr|eot|gif|gzip|jar|json|otf|png|svg|ttf|woff|zip)$" checks="NewlineAtEndOfFile" />
 
-    <!-- SlsLayout and its tests must import logback classes directly to implement/test custom layout -->
-    <suppress files="[/\\]logging[/\\]SlsLayout(Test)?\.java$" id="BanLoggingImplementations" />
+    <!-- Logging package and ComputeModule must import logback classes directly for layout configuration -->
+    <suppress files="[/\\]logging[/\\].*\.java$" id="BanLoggingImplementations" />
+    <suppress files="[/\\]ComputeModule\.java$" id="BanLoggingImplementations" />
 
     <!-- Generated code should not be subjected to checkstyle. -->
     <suppress files="[/\\].*[/\\]generated.*[/\\]" checks="." />

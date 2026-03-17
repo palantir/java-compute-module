@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2024 Palantir Technologies Inc. All rights reserved.
+ * (c) Copyright 2026 Palantir Technologies Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palantir.logsafe.SafeArg;
+import com.palantir.logsafe.UnsafeArg;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,6 +124,33 @@ class SlsLayoutTest {
 
         Map<String, Object> parsed = MAPPER.readValue(output, Map.class);
         assertThat((String) parsed.get("origin")).contains("SlsLayoutTest");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void includes_safe_args_in_params() throws Exception {
+        LoggingEvent event = createEvent(Level.INFO, "Adding numbers");
+        event.setArgumentArray(new Object[] {SafeArg.of("a", 1), SafeArg.of("b", 2)});
+        String output = layout.doLayout(event);
+
+        Map<String, Object> parsed = MAPPER.readValue(output, Map.class);
+        Map<String, Object> params = (Map<String, Object>) parsed.get("params");
+        assertThat(params).containsEntry("a", 1);
+        assertThat(params).containsEntry("b", 2);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void includes_unsafe_args_in_unsafe_params() throws Exception {
+        LoggingEvent event = createEvent(Level.INFO, "User login");
+        event.setArgumentArray(new Object[] {SafeArg.of("userId", 42), UnsafeArg.of("email", "test@example.com")});
+        String output = layout.doLayout(event);
+
+        Map<String, Object> parsed = MAPPER.readValue(output, Map.class);
+        Map<String, Object> params = (Map<String, Object>) parsed.get("params");
+        Map<String, Object> unsafeParams = (Map<String, Object>) parsed.get("unsafeParams");
+        assertThat(params).containsEntry("userId", 42);
+        assertThat(unsafeParams).containsEntry("email", "test@example.com");
     }
 
     private LoggingEvent createEvent(Level level, String message) {

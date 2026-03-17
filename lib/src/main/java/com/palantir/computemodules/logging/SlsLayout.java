@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2024 Palantir Technologies Inc. All rights reserved.
+ * (c) Copyright 2026 Palantir Technologies Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.LayoutBase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.palantir.logsafe.Arg;
+import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.Unsafe;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -52,12 +54,27 @@ public final class SlsLayout extends LayoutBase<ILoggingEvent> {
         envelope.put("message", message);
 
         Map<String, String> mdcMap = event.getMDCPropertyMap();
-        Map<String, String> params = new LinkedHashMap<>();
+        Map<String, Object> params = new LinkedHashMap<>();
         copyIfPresent(mdcMap, params, "session_id");
         copyIfPresent(mdcMap, params, "job_id");
         copyIfPresent(mdcMap, params, "pid");
+        Map<String, Object> unsafeParams = new LinkedHashMap<>();
+
+        Object[] args = event.getArgumentArray();
+        if (args != null) {
+            for (Object arg : args) {
+                if (arg instanceof Arg<?> logArg) {
+                    if (arg instanceof SafeArg<?>) {
+                        params.put(logArg.getName(), logArg.getValue());
+                    } else {
+                        unsafeParams.put(logArg.getName(), logArg.getValue());
+                    }
+                }
+            }
+        }
+
         envelope.put("params", params);
-        envelope.put("unsafeParams", Map.of());
+        envelope.put("unsafeParams", unsafeParams);
         envelope.put("tags", Map.of());
 
         try {
@@ -68,7 +85,7 @@ public final class SlsLayout extends LayoutBase<ILoggingEvent> {
         }
     }
 
-    private static void copyIfPresent(Map<String, String> source, Map<String, String> target, String key) {
+    private static void copyIfPresent(Map<String, String> source, Map<String, Object> target, String key) {
         String value = source.get(key);
         if (value != null) {
             target.put(key, value);
