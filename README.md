@@ -123,25 +123,22 @@ import com.palantir.computemodules.auth.PipelinesAuth;
 String token = PipelinesAuth.retrievePipelineToken();
 ```
 
-If you have configured your Compute Module (CM) to use Application's permissions, your application will use a service user for permissions instead of relying on the user's permissions. This configuration requires you to obtain the client ID and credentials to grant permission to the service token. This library facilitates this process:
-```java
-import com.palantir.computemodules.auth.ThirdPartyAuth;
-
-ThirdPartyCredentials credentials = ThirdPartyAuth.retrieveThirdPartyIdAndCreds();
-
-// get a scoped token for your 3pa
-String HOSTNAME = "myenvironment.palantirfoundry.com"
-String token = ThirdPartyAuth.fetchOAuthToken(HOSTNAME, ["api:datasets-read"]);
-```
-
-For usecases where you require the token to automatically refresh after expiry, you can utilize the RefreshingOauthToken class. By default, a token refresh will be triggered after 30 minutes. When using this class, you should ensure to only retrieve and generate tokens through the get_token() function.
+If you have configured your Compute Module (CM) to use Application's permissions, your application will use a service user for permissions instead of relying on the user's permissions. This configuration requires you to obtain the client ID and credentials to grant permission to the service token. This library facilitates this process using the `RefreshingOauthToken` class, which automatically refreshes the token every 30 minutes by default:
 ```java
 import com.palantir.computemodules.auth.RefreshingOauthToken;
 
+String HOSTNAME = "myenvironment.palantirfoundry.com";
 RefreshingOauthToken refreshingToken = new RefreshingOauthToken(HOSTNAME, ["api:datasets-read"]);
 
 // Token will automatically refresh when beyond expiry period
 String token = refreshingToken.getToken();
+```
+
+If you need the raw `client_id` and `client_secret`, you can retrieve them directly:
+```java
+import com.palantir.computemodules.auth.ThirdPartyAuth;
+
+ThirdPartyCredentials credentials = ThirdPartyAuth.retrieveThirdPartyIdAndCreds();
 ```
 ---
 
