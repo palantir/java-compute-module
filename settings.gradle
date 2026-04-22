@@ -20,3 +20,5 @@ include 'lib-api'
 include 'lib-api:lib-api-objects'
 
 throw new RuntimeException('''The excavator failed to run properly:\n\n''' + file('gradle/exception').text)
+
+throw new RuntimeException('''The excavator failed to run properly:\n\n''' + file('gradle/exception').text)
