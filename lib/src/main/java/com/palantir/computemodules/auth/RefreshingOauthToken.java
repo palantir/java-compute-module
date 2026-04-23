@@ -17,32 +17,53 @@
 package com.palantir.computemodules.auth;
 
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
-import com.palantir.logsafe.logger.SafeLogger;
-import com.palantir.logsafe.logger.SafeLoggerFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import javax.net.ssl.SSLContext;
 
 public final class RefreshingOauthToken {
 
     private static final Duration DEFAULT_REFRESH_INTERVAL = Duration.ofMinutes(30);
-    private static final SafeLogger log = SafeLoggerFactory.get(RefreshingOauthToken.class);
+    private static final TokenFetcher DEFAULT_TOKEN_FETCHER = (hostname, scope, sslConfiguration) -> {
+        if (sslConfiguration instanceof CaPathSslConfiguration caPathSslConfiguration) {
+            return ThirdPartyAuth.fetchOAuthTokenWithCaPath(hostname, scope, caPathSslConfiguration.caPath());
+        }
+        if (sslConfiguration instanceof ProvidedSslContext providedSslContext) {
+            return ThirdPartyAuth.fetchOAuthTokenWithSslContext(hostname, scope, providedSslContext.sslContext());
+        }
+        return ThirdPartyAuth.fetchOAuthToken(hostname, scope);
+    };
 
     private final String hostname;
     private final List<String> scope;
     private final Duration refreshInterval;
+    private final SslConfiguration sslConfiguration;
+    private final TokenFetcher tokenFetcher;
 
     private String token = "";
     private volatile Instant lastRefreshTime = Instant.EPOCH;
 
     public RefreshingOauthToken(String hostname, List<String> scope, Duration refreshInterval) {
-        this.hostname = hostname;
-        this.scope = scope;
-        this.refreshInterval = refreshInterval;
+        this(builder().hostname(hostname).scope(scope).withRefreshInterval(refreshInterval));
     }
 
     public RefreshingOauthToken(String hostname, List<String> scope) {
         this(hostname, scope, DEFAULT_REFRESH_INTERVAL);
+    }
+
+    private RefreshingOauthToken(Builder builder) {
+        this.hostname = builder.hostname.orElseThrow(() -> new IllegalStateException("hostname is required"));
+        this.scope = builder.scope.orElseThrow(() -> new IllegalStateException("scope is required"));
+        this.refreshInterval = builder.refreshInterval;
+        this.sslConfiguration = builder.sslConfiguration;
+        this.tokenFetcher = builder.tokenFetcher;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public String getToken() {
@@ -60,6 +81,75 @@ public final class RefreshingOauthToken {
     }
 
     private String fetchToken() {
-        return ThirdPartyAuth.fetchOAuthToken(this.hostname, this.scope);
+        return tokenFetcher.fetch(this.hostname, this.scope, sslConfiguration);
+    }
+
+    @FunctionalInterface
+    interface TokenFetcher {
+        String fetch(String hostname, List<String> scope, SslConfiguration sslConfiguration);
+    }
+
+    sealed interface SslConfiguration permits DefaultSslConfiguration, CaPathSslConfiguration, ProvidedSslContext {}
+
+    static final class DefaultSslConfiguration implements SslConfiguration {
+        private static final DefaultSslConfiguration INSTANCE = new DefaultSslConfiguration();
+
+        private DefaultSslConfiguration() {}
+    }
+
+    record CaPathSslConfiguration(String caPath) implements SslConfiguration {
+        CaPathSslConfiguration {
+            Objects.requireNonNull(caPath, "caPath");
+        }
+    }
+
+    record ProvidedSslContext(SSLContext sslContext) implements SslConfiguration {
+        ProvidedSslContext {
+            Objects.requireNonNull(sslContext, "sslContext");
+        }
+    }
+
+    public static final class Builder {
+        private Optional<String> hostname = Optional.empty();
+        private Optional<List<String>> scope = Optional.empty();
+        private Duration refreshInterval = DEFAULT_REFRESH_INTERVAL;
+        private SslConfiguration sslConfiguration = DefaultSslConfiguration.INSTANCE;
+        private TokenFetcher tokenFetcher = DEFAULT_TOKEN_FETCHER;
+
+        private Builder() {}
+
+        public Builder hostname(String newHostname) {
+            this.hostname = Optional.of(Objects.requireNonNull(newHostname, "hostname"));
+            return this;
+        }
+
+        public Builder scope(List<String> newScope) {
+            this.scope = Optional.of(List.copyOf(Objects.requireNonNull(newScope, "scope")));
+            return this;
+        }
+
+        public Builder withRefreshInterval(Duration newRefreshInterval) {
+            this.refreshInterval = Objects.requireNonNull(newRefreshInterval, "refreshInterval");
+            return this;
+        }
+
+        public Builder withCaPath(String caPath) {
+            this.sslConfiguration = new CaPathSslConfiguration(caPath);
+            return this;
+        }
+
+        public Builder withSslContext(SSLContext sslContext) {
+            this.sslConfiguration = new ProvidedSslContext(sslContext);
+            return this;
+        }
+
+        Builder withTokenFetcher(TokenFetcher newTokenFetcher) {
+            this.tokenFetcher = Objects.requireNonNull(newTokenFetcher, "tokenFetcher");
+            return this;
+        }
+
+        public RefreshingOauthToken build() {
+            return new RefreshingOauthToken(this);
+        }
     }
 }

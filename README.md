@@ -126,12 +126,33 @@ String token = PipelinesAuth.retrievePipelineToken();
 If you have configured your Compute Module (CM) to use Application's permissions, your application will use a service user for permissions instead of relying on the user's permissions. This configuration requires you to obtain the client ID and credentials to grant permission to the service token. This library facilitates this process using the `RefreshingOauthToken` class, which automatically refreshes the token every 30 minutes by default:
 ```java
 import com.palantir.computemodules.auth.RefreshingOauthToken;
+import java.util.List;
 
 String HOSTNAME = "myenvironment.palantirfoundry.com";
-RefreshingOauthToken refreshingToken = new RefreshingOauthToken(HOSTNAME, ["api:datasets-read"]);
+RefreshingOauthToken refreshingToken = new RefreshingOauthToken(HOSTNAME, List.of("api:datasets-read"));
 
 // Token will automatically refresh when beyond expiry period
 String token = refreshingToken.getToken();
+```
+
+If the default CA bundle does not work for your domain, use the builder to override it with either a custom CA file or a prebuilt `SSLContext`:
+```java
+import com.palantir.computemodules.auth.RefreshingOauthToken;
+import com.palantir.computemodules.ssl.SslUtils;
+import java.util.List;
+
+RefreshingOauthToken tokenWithCustomCa = RefreshingOauthToken.builder()
+        .hostname(HOSTNAME)
+        .scope(List.of("api:datasets-read"))
+        .withCaPath("/path/to/custom-ca.pem")
+        .build();
+
+RefreshingOauthToken tokenWithCustomSslContext =
+        RefreshingOauthToken.builder()
+                .hostname(HOSTNAME)
+                .scope(List.of("api:datasets-read"))
+                .withSslContext(SslUtils.createSslContext("/path/to/custom-ca.pem"))
+                .build();
 ```
 
 If you need the raw `client_id` and `client_secret`, you can retrieve them directly:
@@ -212,4 +233,4 @@ Steps to follow:
    docker build --platform=linux/amd64 -t your-image-name .
    ```
 3. Push the built image to your Foundry Docker registry.
-4. Use the image in a compute module. 
+4. Use the image in a compute module.
