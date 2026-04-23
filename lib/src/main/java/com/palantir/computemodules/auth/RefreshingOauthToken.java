@@ -16,11 +16,12 @@
 
 package com.palantir.computemodules.auth;
 
+import com.palantir.logsafe.Preconditions;
+import com.palantir.logsafe.exceptions.SafeIllegalStateException;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import javax.net.ssl.SSLContext;
 
@@ -55,8 +56,8 @@ public final class RefreshingOauthToken {
     }
 
     private RefreshingOauthToken(Builder builder) {
-        this.hostname = builder.hostname.orElseThrow(() -> new IllegalStateException("hostname is required"));
-        this.scope = builder.scope.orElseThrow(() -> new IllegalStateException("scope is required"));
+        this.hostname = builder.hostname.orElseThrow(() -> new SafeIllegalStateException("hostname is required"));
+        this.scope = builder.scope.orElseThrow(() -> new SafeIllegalStateException("scope is required"));
         this.refreshInterval = builder.refreshInterval;
         this.sslConfiguration = builder.sslConfiguration;
         this.tokenFetcher = builder.tokenFetcher;
@@ -99,13 +100,13 @@ public final class RefreshingOauthToken {
 
     record CaPathSslConfiguration(String caPath) implements SslConfiguration {
         CaPathSslConfiguration {
-            Objects.requireNonNull(caPath, "caPath");
+            Preconditions.checkNotNull(caPath, "caPath");
         }
     }
 
     record ProvidedSslContext(SSLContext sslContext) implements SslConfiguration {
         ProvidedSslContext {
-            Objects.requireNonNull(sslContext, "sslContext");
+            Preconditions.checkNotNull(sslContext, "sslContext");
         }
     }
 
@@ -119,17 +120,17 @@ public final class RefreshingOauthToken {
         private Builder() {}
 
         public Builder hostname(String newHostname) {
-            this.hostname = Optional.of(Objects.requireNonNull(newHostname, "hostname"));
+            this.hostname = Optional.of(Preconditions.checkNotNull(newHostname, "hostname"));
             return this;
         }
 
         public Builder scope(List<String> newScope) {
-            this.scope = Optional.of(List.copyOf(Objects.requireNonNull(newScope, "scope")));
+            this.scope = Optional.of(List.copyOf(Preconditions.checkNotNull(newScope, "scope")));
             return this;
         }
 
         public Builder withRefreshInterval(Duration newRefreshInterval) {
-            this.refreshInterval = Objects.requireNonNull(newRefreshInterval, "refreshInterval");
+            this.refreshInterval = Preconditions.checkNotNull(newRefreshInterval, "refreshInterval");
             return this;
         }
 
@@ -144,7 +145,7 @@ public final class RefreshingOauthToken {
         }
 
         Builder withTokenFetcher(TokenFetcher newTokenFetcher) {
-            this.tokenFetcher = Objects.requireNonNull(newTokenFetcher, "tokenFetcher");
+            this.tokenFetcher = Preconditions.checkNotNull(newTokenFetcher, "tokenFetcher");
             return this;
         }
 

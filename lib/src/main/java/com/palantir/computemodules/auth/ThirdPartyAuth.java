@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.palantir.computemodules.client.config.EnvVars;
 import com.palantir.computemodules.ssl.SslUtils;
+import com.palantir.logsafe.Preconditions;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import com.palantir.logsafe.exceptions.SafeUncheckedIoException;
 import java.io.IOException;
@@ -31,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.net.ssl.SSLContext;
 
 public final class ThirdPartyAuth {
@@ -58,8 +58,8 @@ public final class ThirdPartyAuth {
     }
 
     static String fetchOAuthTokenWithCaPath(String hostname, List<String> scope, String caPath) {
-        return fetchOAuthTokenWithSslContext(
-                hostname, scope, SslUtils.createSslContext(Objects.requireNonNull(caPath, "caPath")));
+        return fetchOAuthTokenWithSslContext(hostname, scope, SslUtils.createSslContext(Preconditions.checkNotNull(
+                caPath, "caPath")));
     }
 
     static String fetchOAuthTokenWithSslContext(String hostname, List<String> scope, SSLContext sslContext) {
@@ -73,8 +73,9 @@ public final class ThirdPartyAuth {
 
             String url = HTTPS + hostname + OAUTH_TOKEN_ENDPOINT;
 
-            HttpClient client =
-                    HttpClient.newBuilder().sslContext(Objects.requireNonNull(sslContext, "sslContext")).build();
+            HttpClient client = HttpClient.newBuilder()
+                    .sslContext(Preconditions.checkNotNull(sslContext, "sslContext"))
+                    .build();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Content-Type", "application/x-www-form-urlencoded")
