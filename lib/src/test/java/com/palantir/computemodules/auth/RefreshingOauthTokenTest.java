@@ -31,14 +31,12 @@ class RefreshingOauthTokenTest {
     @Test
     void test_default_builder_uses_default_ssl_configuration() {
         AtomicReference<RefreshingOauthToken.SslConfiguration> sslConfiguration = new AtomicReference<>();
-        RefreshingOauthToken refreshingOauthToken = RefreshingOauthToken.builder()
-                .hostname("example.com")
-                .scope(List.of("scope"))
-                .withTokenFetcher((hostname, scope, config) -> {
+        RefreshingOauthToken refreshingOauthToken = new RefreshingOauthToken(
+                RefreshingOauthToken.builder().hostname("example.com").scope(List.of("scope")),
+                (_hostname, _scope, config) -> {
                     sslConfiguration.set(config);
                     return "token";
-                })
-                .build();
+                });
 
         assertThat(refreshingOauthToken.getToken()).isEqualTo("token");
         assertThat(sslConfiguration.get()).isInstanceOf(RefreshingOauthToken.DefaultSslConfiguration.class);
@@ -47,15 +45,15 @@ class RefreshingOauthTokenTest {
     @Test
     void test_builder_allows_overriding_ca_path() {
         AtomicReference<RefreshingOauthToken.SslConfiguration> sslConfiguration = new AtomicReference<>();
-        RefreshingOauthToken refreshingOauthToken = RefreshingOauthToken.builder()
-                .hostname("example.com")
-                .scope(List.of("scope"))
-                .withCaPath("/custom/ca.pem")
-                .withTokenFetcher((hostname, scope, config) -> {
+        RefreshingOauthToken refreshingOauthToken = new RefreshingOauthToken(
+                RefreshingOauthToken.builder()
+                        .hostname("example.com")
+                        .scope(List.of("scope"))
+                        .withCaPath("/custom/ca.pem"),
+                (_hostname, _scope, config) -> {
                     sslConfiguration.set(config);
                     return "token";
-                })
-                .build();
+                });
 
         assertThat(refreshingOauthToken.getToken()).isEqualTo("token");
         assertThat(sslConfiguration.get()).isInstanceOf(RefreshingOauthToken.CaPathSslConfiguration.class);
@@ -67,15 +65,15 @@ class RefreshingOauthTokenTest {
     void test_builder_allows_overriding_ssl_context() throws Exception {
         AtomicReference<RefreshingOauthToken.SslConfiguration> sslConfiguration = new AtomicReference<>();
         SSLContext sslContext = SSLContext.getDefault();
-        RefreshingOauthToken refreshingOauthToken = RefreshingOauthToken.builder()
-                .hostname("example.com")
-                .scope(List.of("scope"))
-                .withSslContext(sslContext)
-                .withTokenFetcher((hostname, scope, config) -> {
+        RefreshingOauthToken refreshingOauthToken = new RefreshingOauthToken(
+                RefreshingOauthToken.builder()
+                        .hostname("example.com")
+                        .scope(List.of("scope"))
+                        .withSslContext(sslContext),
+                (_hostname, _scope, config) -> {
                     sslConfiguration.set(config);
                     return "token";
-                })
-                .build();
+                });
 
         assertThat(refreshingOauthToken.getToken()).isEqualTo("token");
         assertThat(sslConfiguration.get()).isInstanceOf(RefreshingOauthToken.ProvidedSslContext.class);
@@ -86,11 +84,9 @@ class RefreshingOauthTokenTest {
     @Test
     void test_token_is_cached_until_refresh_interval_has_elapsed() {
         AtomicInteger fetchCount = new AtomicInteger();
-        RefreshingOauthToken refreshingOauthToken = RefreshingOauthToken.builder()
-                .hostname("example.com")
-                .scope(List.of("scope"))
-                .withTokenFetcher((hostname, scope, config) -> "token-" + fetchCount.incrementAndGet())
-                .build();
+        RefreshingOauthToken refreshingOauthToken = new RefreshingOauthToken(
+                RefreshingOauthToken.builder().hostname("example.com").scope(List.of("scope")),
+                (_hostname, _scope, _config) -> "token-" + fetchCount.incrementAndGet());
 
         assertThat(refreshingOauthToken.getToken()).isEqualTo("token-1");
         assertThat(refreshingOauthToken.getToken()).isEqualTo("token-1");
@@ -100,12 +96,12 @@ class RefreshingOauthTokenTest {
     @Test
     void test_token_is_refreshed_when_refresh_interval_has_elapsed() {
         AtomicInteger fetchCount = new AtomicInteger();
-        RefreshingOauthToken refreshingOauthToken = RefreshingOauthToken.builder()
-                .hostname("example.com")
-                .scope(List.of("scope"))
-                .withRefreshInterval(Duration.ofMillis(-1))
-                .withTokenFetcher((hostname, scope, config) -> "token-" + fetchCount.incrementAndGet())
-                .build();
+        RefreshingOauthToken refreshingOauthToken = new RefreshingOauthToken(
+                RefreshingOauthToken.builder()
+                        .hostname("example.com")
+                        .scope(List.of("scope"))
+                        .withRefreshInterval(Duration.ofMillis(-1)),
+                (_hostname, _scope, _config) -> "token-" + fetchCount.incrementAndGet());
 
         assertThat(refreshingOauthToken.getToken()).isEqualTo("token-1");
         assertThat(refreshingOauthToken.getToken()).isEqualTo("token-2");
@@ -114,14 +110,16 @@ class RefreshingOauthTokenTest {
 
     @Test
     void test_builder_requires_hostname() {
-        assertThatThrownBy(() -> RefreshingOauthToken.builder().scope(List.of("scope")).build())
+        assertThatThrownBy(() ->
+                        RefreshingOauthToken.builder().scope(List.of("scope")).build())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("hostname is required");
     }
 
     @Test
     void test_builder_requires_scope() {
-        assertThatThrownBy(() -> RefreshingOauthToken.builder().hostname("example.com").build())
+        assertThatThrownBy(() ->
+                        RefreshingOauthToken.builder().hostname("example.com").build())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("scope is required");
     }

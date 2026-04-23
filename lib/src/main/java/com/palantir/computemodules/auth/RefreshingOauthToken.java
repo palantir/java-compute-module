@@ -56,11 +56,29 @@ public final class RefreshingOauthToken {
     }
 
     private RefreshingOauthToken(Builder builder) {
-        this.hostname = builder.hostname.orElseThrow(() -> new SafeIllegalStateException("hostname is required"));
-        this.scope = builder.scope.orElseThrow(() -> new SafeIllegalStateException("scope is required"));
-        this.refreshInterval = builder.refreshInterval;
-        this.sslConfiguration = builder.sslConfiguration;
-        this.tokenFetcher = builder.tokenFetcher;
+        this(builder, DEFAULT_TOKEN_FETCHER);
+    }
+
+    RefreshingOauthToken(Builder builder, TokenFetcher tokenFetcher) {
+        this(
+                builder.hostname.orElseThrow(() -> new SafeIllegalStateException("hostname is required")),
+                builder.scope.orElseThrow(() -> new SafeIllegalStateException("scope is required")),
+                builder.refreshInterval,
+                builder.sslConfiguration,
+                Preconditions.checkNotNull(tokenFetcher, "tokenFetcher"));
+    }
+
+    private RefreshingOauthToken(
+            String hostname,
+            List<String> scope,
+            Duration refreshInterval,
+            SslConfiguration sslConfiguration,
+            TokenFetcher tokenFetcher) {
+        this.hostname = hostname;
+        this.scope = scope;
+        this.refreshInterval = refreshInterval;
+        this.sslConfiguration = sslConfiguration;
+        this.tokenFetcher = tokenFetcher;
     }
 
     public static Builder builder() {
@@ -115,7 +133,6 @@ public final class RefreshingOauthToken {
         private Optional<List<String>> scope = Optional.empty();
         private Duration refreshInterval = DEFAULT_REFRESH_INTERVAL;
         private SslConfiguration sslConfiguration = DefaultSslConfiguration.INSTANCE;
-        private TokenFetcher tokenFetcher = DEFAULT_TOKEN_FETCHER;
 
         private Builder() {}
 
@@ -141,11 +158,6 @@ public final class RefreshingOauthToken {
 
         public Builder withSslContext(SSLContext sslContext) {
             this.sslConfiguration = new ProvidedSslContext(sslContext);
-            return this;
-        }
-
-        Builder withTokenFetcher(TokenFetcher newTokenFetcher) {
-            this.tokenFetcher = Preconditions.checkNotNull(newTokenFetcher, "tokenFetcher");
             return this;
         }
 

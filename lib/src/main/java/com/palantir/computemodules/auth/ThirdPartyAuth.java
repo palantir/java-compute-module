@@ -58,8 +58,8 @@ public final class ThirdPartyAuth {
     }
 
     static String fetchOAuthTokenWithCaPath(String hostname, List<String> scope, String caPath) {
-        return fetchOAuthTokenWithSslContext(hostname, scope, SslUtils.createSslContext(Preconditions.checkNotNull(
-                caPath, "caPath")));
+        return fetchOAuthTokenWithSslContext(
+                hostname, scope, SslUtils.createSslContext(Preconditions.checkNotNull(caPath, "caPath")));
     }
 
     static String fetchOAuthTokenWithSslContext(String hostname, List<String> scope, SSLContext sslContext) {
