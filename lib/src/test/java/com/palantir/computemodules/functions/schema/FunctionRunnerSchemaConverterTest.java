@@ -134,6 +134,22 @@ class FunctionRunnerSchemaConverterTest {
         }
     }
 
+    record Detail(String name) {}
+
+    record Item(String id, List<Detail> details) {}
+
+    record Request(List<Item> items) {}
+
+    record Inner(List<String> leaves) {}
+
+    static class ListWrapper {
+        public final List<Inner> items;
+
+        ListWrapper(List<Inner> items) {
+            this.items = items;
+        }
+    }
+
     private static DataType expectedChildTestClassOutput() {
         Map<CustomTypeFieldName, DataType> childFields = new HashMap<>();
         childFields.put(CustomTypeFieldName.of("childFieldOne"), DataType.boolean_(BooleanType.of()));
@@ -296,6 +312,44 @@ class FunctionRunnerSchemaConverterTest {
         DataType expected = DataType.anonymousCustomType(
                 AnonymousCustomType.builder().fields(expectedFields).build());
         assertThat(dType.orElseThrow()).isEqualTo(expected);
+    }
+
+    @Test
+    public void testRecordWithNestedListOfRecordsContainingList() {
+        Optional<DataType> dType = FunctionRunnerSchemaConverter.classToDataType(Request.class);
+        assertThat(dType).isNotEmpty();
+
+        Map<CustomTypeFieldName, DataType> detailFields = new HashMap<>();
+        detailFields.put(CustomTypeFieldName.of("name"), DataType.string(StringType.of()));
+        DataType detailType = DataType.anonymousCustomType(
+                AnonymousCustomType.builder().fields(detailFields).build());
+
+        Map<CustomTypeFieldName, DataType> itemFields = new HashMap<>();
+        itemFields.put(CustomTypeFieldName.of("id"), DataType.string(StringType.of()));
+        itemFields.put(CustomTypeFieldName.of("details"), DataType.list(ListType.of(detailType)));
+        DataType itemType = DataType.anonymousCustomType(
+                AnonymousCustomType.builder().fields(itemFields).build());
+
+        Map<CustomTypeFieldName, DataType> requestFields = new HashMap<>();
+        requestFields.put(CustomTypeFieldName.of("items"), DataType.list(ListType.of(itemType)));
+        DataType expected = DataType.anonymousCustomType(
+                AnonymousCustomType.builder().fields(requestFields).build());
+
+        assertThat(dType.orElseThrow()).isEqualTo(expected);
+    }
+
+    @Test
+    public void testTopLevelListFieldContainingNestedList() {
+        Optional<Map<String, DataType>> dTypes = FunctionRunnerSchemaConverter.classToDataTypes(ListWrapper.class);
+        assertThat(dTypes).isNotEmpty();
+
+        Map<CustomTypeFieldName, DataType> innerFields = new HashMap<>();
+        innerFields.put(CustomTypeFieldName.of("leaves"), DataType.list(ListType.of(DataType.string(StringType.of()))));
+        DataType innerType = DataType.anonymousCustomType(
+                AnonymousCustomType.builder().fields(innerFields).build());
+
+        assertThat(dTypes.orElseThrow()).hasSize(1);
+        assertThat(dTypes.orElseThrow().get("items")).isEqualTo(DataType.list(ListType.of(innerType)));
     }
 
     // Test input/output classes for getFunctionSchemas tests
