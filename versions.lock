@@ -4,7 +4,7 @@ ch.qos.logback:logback-classic:1.5.18 (1 constraints: 4105413b)
 
 ch.qos.logback:logback-core:1.5.18 (1 constraints: 400d462a)
 
-com.fasterxml.jackson.core:jackson-annotations:2.21 (5 constraints: c954dabd)
+com.fasterxml.jackson.core:jackson-annotations:2.21 (6 constraints: a1599d79)
 
 com.fasterxml.jackson.core:jackson-core:2.21.1 (4 constraints: 0b4f4a03)
 
