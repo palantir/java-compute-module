@@ -151,12 +151,12 @@ public final class FunctionRunnerSchemaConverter {
      * @return a {@link DataType} corresponding to the class provided
      */
     static Optional<DataType> classToDataType(Class<?> clazz) {
-        return recClassToDataType(clazz, 0, clazz, new Type[0]);
+        return recClassToDataType(clazz, 0, new HashSet<>(), new Type[0]);
     }
 
     private static Optional<DataType> fieldToDataType(Field field) {
         Type[] typeArgs = getTypeArgumentsFromField(field);
-        return recClassToDataType(field.getType(), 0, field.getType(), typeArgs);
+        return recClassToDataType(field.getType(), 0, new HashSet<>(), typeArgs);
     }
 
     /**
@@ -247,19 +247,12 @@ public final class FunctionRunnerSchemaConverter {
 
     @SuppressWarnings("checkstyle:CyclomaticComplexity")
     private static Optional<DataType> recClassToDataType(
-            Class<?> clazz, int depth, Class<?> rootClazz, Type[] typeArguments) {
+            Class<?> clazz, int depth, Set<Class<?>> visitedCustomTypes, Type[] typeArguments) {
         // TODO(.): handle binary input
-        if (depth > 0 && clazz == rootClazz) {
-            log.error(
-                    "Detected cyclic DataType",
-                    SafeArg.of("className", clazz.getTypeName()),
-                    SafeArg.of("rootClass", rootClazz.getTypeName()));
-            return Optional.empty();
-        } else if (depth >= MAX_OBJECT_DEPTH) {
+        if (depth >= MAX_OBJECT_DEPTH) {
             log.error(
                     "Java class too deeply nested to be converted to a DataType",
                     SafeArg.of("className", clazz.getTypeName()),
-                    SafeArg.of("rootClass", rootClazz.getTypeName()),
                     SafeArg.of("maxDepth", MAX_OBJECT_DEPTH));
             return Optional.empty();
         } else if (clazz == Integer.class || clazz == int.class) {
@@ -284,16 +277,22 @@ public final class FunctionRunnerSchemaConverter {
             return Optional.of(DataType.timestamp(TimestampType.of()));
         } else if (clazz.isArray()) {
             Optional<DataType> componentType =
-                    recClassToDataType(clazz.getComponentType(), depth + 1, rootClazz, new Type[0]);
+                    recClassToDataType(clazz.getComponentType(), depth + 1, visitedCustomTypes, new Type[0]);
             return componentType.map(dataType -> DataType.list(ListType.of(dataType)));
         } else if (Map.class.isAssignableFrom(clazz)) {
             Optional<DataType> maybeKeyType = Optional.empty();
             Optional<DataType> maybeValueType = Optional.empty();
             if (typeArguments.length == 2) {
                 maybeKeyType = recClassToDataType(
-                        getRawClass(typeArguments[0]), depth + 1, rootClazz, getNestedTypeArgs(typeArguments[0]));
+                        getRawClass(typeArguments[0]),
+                        depth + 1,
+                        visitedCustomTypes,
+                        getNestedTypeArgs(typeArguments[0]));
                 maybeValueType = recClassToDataType(
-                        getRawClass(typeArguments[1]), depth + 1, rootClazz, getNestedTypeArgs(typeArguments[1]));
+                        getRawClass(typeArguments[1]),
+                        depth + 1,
+                        visitedCustomTypes,
+                        getNestedTypeArgs(typeArguments[1]));
             }
             DataType keyType = maybeKeyType.orElseGet(() -> DataType.unknown("key", Optional.empty()));
             DataType valueType = maybeValueType.orElseGet(() -> DataType.unknown("value", Optional.empty()));
@@ -302,7 +301,10 @@ public final class FunctionRunnerSchemaConverter {
             Optional<DataType> maybeParamType = Optional.empty();
             if (typeArguments.length > 0) {
                 maybeParamType = recClassToDataType(
-                        getRawClass(typeArguments[0]), depth + 1, rootClazz, getNestedTypeArgs(typeArguments[0]));
+                        getRawClass(typeArguments[0]),
+                        depth + 1,
+                        visitedCustomTypes,
+                        getNestedTypeArgs(typeArguments[0]));
             }
             DataType paramType = maybeParamType.orElseGet(() -> DataType.unknown("value", Optional.empty()));
             return Optional.of(DataType.optionalType(OptionalType.of(paramType)));
@@ -310,7 +312,10 @@ public final class FunctionRunnerSchemaConverter {
             Optional<DataType> maybeParamType = Optional.empty();
             if (typeArguments.length > 0) {
                 maybeParamType = recClassToDataType(
-                        getRawClass(typeArguments[0]), depth + 1, rootClazz, getNestedTypeArgs(typeArguments[0]));
+                        getRawClass(typeArguments[0]),
+                        depth + 1,
+                        visitedCustomTypes,
+                        getNestedTypeArgs(typeArguments[0]));
             }
             DataType paramType = maybeParamType.orElseGet(() -> DataType.unknown("value", Optional.empty()));
             return Optional.of(DataType.list(ListType.of(paramType)));
@@ -318,16 +323,25 @@ public final class FunctionRunnerSchemaConverter {
             Optional<DataType> maybeParamType = Optional.empty();
             if (typeArguments.length > 0) {
                 maybeParamType = recClassToDataType(
-                        getRawClass(typeArguments[0]), depth + 1, rootClazz, getNestedTypeArgs(typeArguments[0]));
+                        getRawClass(typeArguments[0]),
+                        depth + 1,
+                        visitedCustomTypes,
+                        getNestedTypeArgs(typeArguments[0]));
             }
             DataType paramType = maybeParamType.orElseGet(() -> DataType.unknown("value", Optional.empty()));
             return Optional.of(DataType.set(SetType.of(paramType)));
         } else {
+            if (visitedCustomTypes.contains(clazz)) {
+                log.error("Detected cyclic DataType", SafeArg.of("className", clazz.getTypeName()));
+                return Optional.empty();
+            }
+            Set<Class<?>> nextVisited = new HashSet<>(visitedCustomTypes);
+            nextVisited.add(clazz);
             Map<CustomTypeFieldName, DataType> fieldsAsDataType = new HashMap<>();
             getFieldsToTraverse(clazz).forEach(field -> {
                 CustomTypeFieldName fName = CustomTypeFieldName.of(field.getName());
                 Type[] typeArgs = getTypeArgumentsFromField(field);
-                Optional<DataType> dataType = recClassToDataType(field.getType(), depth + 1, rootClazz, typeArgs);
+                Optional<DataType> dataType = recClassToDataType(field.getType(), depth + 1, nextVisited, typeArgs);
                 if (dataType.isPresent()) {
                     fieldsAsDataType.put(fName, dataType.get());
                 } else {
@@ -335,8 +349,7 @@ public final class FunctionRunnerSchemaConverter {
                             "A member of this Java class was unable to be converted to a DataType.",
                             SafeArg.of("className", clazz.getTypeName()),
                             SafeArg.of("fieldName", field.getName()),
-                            SafeArg.of("childClassName", field.getType().getTypeName()),
-                            SafeArg.of("rootClass", rootClazz.getTypeName()));
+                            SafeArg.of("childClassName", field.getType().getTypeName()));
                     // Casting fieldType toUpperCase to avoid `provided type is known` error
                     fieldsAsDataType.put(
                             fName,
