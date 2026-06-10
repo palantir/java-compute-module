@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class DefaultSerializerDeserializerTest {
@@ -50,6 +51,22 @@ class DefaultSerializerDeserializerTest {
         String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(serialized)
                 .describedAs("String should be serialized as JSON string")
+                .isEqualTo("\"Hello World\"");
+    }
+
+    @Test
+    void test_serialize_optional_string() throws IOException {
+        Optional<String> input = Optional.of("Hello World");
+
+        Result result = serializer.serialize(TEST_JOB_ID, input);
+
+        assertInstanceOf(Ok.class, result, "Optional string serialization should return Ok result");
+        Ok okResult = (Ok) result;
+        assertThat(okResult.jobId()).describedAs("Job ID should match input").isEqualTo(TEST_JOB_ID);
+
+        String serialized = new String(okResult.result().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(serialized)
+                .describedAs("Optional string should be serialized as JSON string")
                 .isEqualTo("\"Hello World\"");
     }
 
