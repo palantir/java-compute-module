@@ -26,4 +26,11 @@
 
     <!-- Generated code should not be subjected to checkstyle. -->
     <suppress files="[/\\].*[/\\]generated.*[/\\]" checks="." />
+
+    <!-- These classes intentionally integrate with Logback directly
+         (programmatic config + custom Layout) which SLF4J cannot express. -->
+    <suppress files="logging[/\\]LoggingConfiguration\.java" id="BanLoggingImplementations" />
+    <suppress files="logging[/\\]SlsLayout\.java" id="BanLoggingImplementations" />
+    <suppress files="logging[/\\]SlsLayoutTest\.java" id="BanLoggingImplementations" />
+    <suppress files="ComputeModule\.java" id="BanLoggingImplementations" />
 </suppressions>
