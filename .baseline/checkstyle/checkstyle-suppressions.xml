@@ -26,4 +26,9 @@
 
     <!-- Generated code should not be subjected to checkstyle. -->
     <suppress files="[/\\].*[/\\]generated.*[/\\]" checks="." />
+
+    <!-- Logging package and ComputeModule must import logback classes directly for layout configuration -->
+    <suppress files="[/\\]logging[/\\].*\.java$" id="BanLoggingImplementations" />
+    <suppress files="[/\\]ComputeModule\.java$" id="BanLoggingImplementations" />
+
 </suppressions>
