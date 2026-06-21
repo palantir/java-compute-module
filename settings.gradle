@@ -5,7 +5,7 @@ pluginManagement {
 }
 
 buildscript {
-    dependencies { classpath 'com.palantir.gradle.jdks:gradle-jdks-settings:0.79.0' }
+    dependencies { classpath 'com.palantir.gradle.jdks:gradle-jdks-settings:0.81.0' }
     repositories {
         mavenCentral()
         gradlePluginPortal()
