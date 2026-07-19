@@ -46,7 +46,7 @@ com.palantir.tokens:auth-tokens:4.7.0 (1 constraints: f30f8999)
 
 com.palantir.tritium:tritium-ids:0.128.0 (1 constraints: fe0f9aa6)
 
-one.util:streamex:0.8.4 (1 constraints: 0e050736)
+one.util:streamex:0.9.0 (1 constraints: 0b050636)
 
 org.eclipse.collections:eclipse-collections:13.0.0 (1 constraints: 1c1091a9)
 
