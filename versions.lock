@@ -16,11 +16,11 @@ com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.1 (1 constraints: 11
 
 com.google.code.findbugs:jsr305:3.0.2 (1 constraints: 980fcc86)
 
-com.google.errorprone:error_prone_annotations:2.49.0 (7 constraints: 9c68a8cb)
+com.google.errorprone:error_prone_annotations:2.50.0 (7 constraints: 966831c5)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
-com.google.guava:guava:33.6.0-jre (2 constraints: a616ba1d)
+com.google.guava:guava:33.7.0-jre (2 constraints: a716ef1d)
 
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 constraints: bd17c918)
 
@@ -56,7 +56,7 @@ org.immutables:value:2.12.2 (1 constraints: ca0f9896)
 
 org.jetbrains:annotations:26.1.0 (3 constraints: 36269a98)
 
-org.jspecify:jspecify:1.0.0 (9 constraints: 7d8d8aa5)
+org.jspecify:jspecify:1.0.1 (9 constraints: 7e8dffa6)
 
 org.slf4j:slf4j-api:2.0.17 (3 constraints: 892b1d5b)
 
