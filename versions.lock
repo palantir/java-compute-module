@@ -26,9 +26,9 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-com.palantir.conjure.java:conjure-lib:8.86.0 (1 constraints: 3e055d3b)
+com.palantir.conjure.java:conjure-lib:8.87.0 (1 constraints: 3e055d3b)
 
-com.palantir.conjure.java.api:errors:2.78.0 (1 constraints: 2910baa9)
+com.palantir.conjure.java.api:errors:2.79.0 (1 constraints: 2a10bda9)
 
 com.palantir.ri:resource-identifier:2.22.0 (1 constraints: 1e1094a9)
 
@@ -38,9 +38,9 @@ com.palantir.safe-logging:logger-slf4j:3.19.0 (1 constraints: 380ea250)
 
 com.palantir.safe-logging:logger-spi:3.19.0 (2 constraints: 7f1ebab1)
 
-com.palantir.safe-logging:preconditions:3.19.0 (6 constraints: 5951a466)
+com.palantir.safe-logging:preconditions:3.19.0 (6 constraints: 5a512767)
 
-com.palantir.safe-logging:safe-logging:3.19.0 (6 constraints: a85e8cbc)
+com.palantir.safe-logging:safe-logging:3.19.0 (6 constraints: a95e45bd)
 
 com.palantir.tokens:auth-tokens:4.9.0 (1 constraints: f50f8f99)
 
@@ -51,8 +51,6 @@ one.util:streamex:0.9.0 (1 constraints: 0b050636)
 org.eclipse.collections:eclipse-collections:13.0.0 (1 constraints: 1c1091a9)
 
 org.eclipse.collections:eclipse-collections-api:13.0.0 (2 constraints: fa22df26)
-
-org.immutables:value:2.12.2 (1 constraints: ca0f9896)
 
 org.jetbrains:annotations:26.1.0 (3 constraints: 36269a98)
 
