@@ -6,13 +6,13 @@ ch.qos.logback:logback-core:1.5.18 (1 constraints: 400d462a)
 
 com.fasterxml.jackson.core:jackson-annotations:2.22 (6 constraints: a759487c)
 
-com.fasterxml.jackson.core:jackson-core:2.22.1 (4 constraints: 0f4fa104)
+com.fasterxml.jackson.core:jackson-core:2.22.3 (4 constraints: 154f3d07)
 
-com.fasterxml.jackson.core:jackson-databind:2.22.1 (6 constraints: 925f85e0)
+com.fasterxml.jackson.core:jackson-databind:2.22.3 (6 constraints: 965f21e3)
 
-com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.22.1 (1 constraints: 3c05443b)
+com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.22.3 (1 constraints: 3c05443b)
 
-com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.1 (1 constraints: 11051436)
+com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.3 (1 constraints: 11051436)
 
 com.google.code.findbugs:jsr305:3.0.2 (1 constraints: 980fcc86)
 
