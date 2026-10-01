@@ -6,9 +6,9 @@ ch.qos.logback:logback-core:1.5.18 (1 constraints: 400d462a)
 
 com.fasterxml.jackson.core:jackson-annotations:2.22 (6 constraints: a759487c)
 
-com.fasterxml.jackson.core:jackson-core:2.22.3 (4 constraints: 154f3d07)
+com.fasterxml.jackson.core:jackson-core:2.22.3 (4 constraints: 174f3f07)
 
-com.fasterxml.jackson.core:jackson-databind:2.22.3 (6 constraints: 965f21e3)
+com.fasterxml.jackson.core:jackson-databind:2.22.3 (6 constraints: 985fd1e3)
 
 com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.22.3 (1 constraints: 3c05443b)
 
@@ -26,7 +26,7 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-com.palantir.conjure.java:conjure-lib:8.90.0 (1 constraints: 3e055d3b)
+com.palantir.conjure.java:conjure-lib:8.91.0 (1 constraints: 3e055d3b)
 
 com.palantir.conjure.java.api:errors:2.80.0 (1 constraints: 2210a6a9)
 
