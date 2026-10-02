@@ -98,22 +98,20 @@ public final class ComputeModuleClient implements Client {
                     if (isSuccess(response)) {
                         return;
                     }
-                    error = new String(
-                            "Failed to post result for jobId: " + jobId + ", statusCode: " + response.statusCode());
-                    log.error("Failed to post result", SafeArg.of("jobId", jobId), SafeArg.of("error", error));
+                    error = new String("Failed to post result, statusCode: " + response.statusCode());
+                    log.error("Failed to post result", SafeArg.of("error", error));
                     Thread.sleep(1000);
                 } catch (IOException e) {
-                    error = new String("Failed to post result for jobId: " + jobId + " error: " + e.toString());
-                    log.error("Failed to post result", SafeArg.of("jobId", jobId), e);
+                    error = new String("Failed to post result, error: " + e.toString());
+                    log.error("Failed to post result", e);
                 }
             }
         } catch (Exception e) {
-            error = new String("Failed to post result for jobId: " + jobId + " error: " + e.toString());
-            log.error("Failed to post result", SafeArg.of("jobId", jobId), e);
+            error = new String("Failed to post result, error: " + e.toString());
+            log.error("Failed to post result", e);
         }
         log.error(
                 "Failed to post result after several attempts. Now attempting to return the error as the result. ",
-                SafeArg.of("jobId", jobId),
                 SafeArg.of("error", error),
                 SafeArg.of("attempts", POST_RESULT_MAX_ATTEMPTS));
         postError(jobId, error);
@@ -129,13 +127,13 @@ public final class ComputeModuleClient implements Client {
             try {
                 HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
                 if (isSuccess(response)) {
-                    log.info("Successfully posted error", SafeArg.of("jobId", jobId));
+                    log.info("Successfully posted error");
                     return;
                 }
-                log.error("Failed to post error", SafeArg.of("jobId", jobId), SafeArg.of("response", response));
+                log.error("Failed to post error", SafeArg.of("response", response));
                 Thread.sleep(1000);
             } catch (Exception e) {
-                log.error("Failed to post error", SafeArg.of("jobId", jobId), e);
+                log.error("Failed to post error", e);
             }
         }
     }
