@@ -113,6 +113,18 @@ public class App {
 3. **Starting the Compute Module**:
    - When the application launches, the compute module is started by invoking the `.start()` method.
    - This initiates the module and makes the registered functions, like `hello`, available for execution.
+
+#### Reporting restarts
+
+If your container restarts mid-job (e.g. it is killed for exceeding its memory limit), the jobs it was running never return a result. With `withReportsRestart()`, the module notifies the runtime on startup, and the runtime returns an error for those jobs. Recommended for most modules, especially ones with long-running or memory-heavy jobs.
+
+```java
+ComputeModule.builder()
+        .withReportsRestart()
+        .add(App::hello, String.class, String.class, "hello")
+        .build()
+        .start();
+```
 ---
 ### 4. Auth and Credentials
 To obtain an auth token for interacting with Foundry resources in Pipeline mode use the following function:
