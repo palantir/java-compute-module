@@ -65,6 +65,7 @@ public final class ComputeModule {
     private final Client client;
     private final ListeningExecutorService executor;
     private final Layout<ILoggingEvent> layout;
+    private final boolean reportsRestart;
     private static final String NULL_VALUE_FROM_FUNCTION_RUN = "No value received from function execution.";
 
     public static ComputeModuleBuilder builder() {
@@ -77,6 +78,10 @@ public final class ComputeModule {
     public Void start() {
         LoggingConfiguration.configure(layout);
         LogContext.initThread();
+        // notify the runtime of (re)start of the module
+        if (reportsRestart) {
+            client.postRestart();
+        }
         client.postSchemas(FunctionRunnerSchemaConverter.getFunctionSchemas(functions));
         while (true) {
             client.getJob().ifPresent(job -> {
@@ -168,11 +173,13 @@ public final class ComputeModule {
             Client client,
             ListeningExecutorService executor,
             Map<String, FunctionRunner<?, ?>> functions,
-            Layout<ILoggingEvent> layout) {
+            Layout<ILoggingEvent> layout,
+            boolean reportsRestart) {
         this.client = client;
         this.executor = executor;
         this.functions = functions;
         this.layout = layout;
+        this.reportsRestart = reportsRestart;
     }
 
     public static final class ComputeModuleBuilder {
@@ -182,6 +189,7 @@ public final class ComputeModule {
         private ListeningExecutorService executor =
                 MoreExecutors.listeningDecorator(Executors.newVirtualThreadPerTaskExecutor());
         private Layout<ILoggingEvent> layout = new SlsLayout();
+        private boolean reportsRestart = false;
 
         private ComputeModuleBuilder() {
             functions = new HashMap<>();
@@ -234,8 +242,14 @@ public final class ComputeModule {
             return this;
         }
 
+        public ComputeModuleBuilder withReportsRestart() {
+            this.reportsRestart = true;
+            return this;
+        }
+
         public ComputeModule build() {
-            return new ComputeModule(client.orElseGet(() -> new ComputeModuleClient()), executor, functions, layout);
+            return new ComputeModule(
+                    client.orElseGet(() -> new ComputeModuleClient()), executor, functions, layout, reportsRestart);
         }
     }
 }
