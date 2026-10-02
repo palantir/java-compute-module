@@ -38,6 +38,9 @@ import java.util.Optional;
 
 public final class ComputeModuleClient implements Client {
     private static final SafeLogger log = SafeLoggerFactory.get(ComputeModuleClient.class);
+    private static final Integer POST_RESULT_MAX_ATTEMPTS = 5;
+    private static final Integer POST_ERROR_MAX_ATTEMPTS = 3;
+    private static final Integer POST_RESTART_MAX_ATTEMPTS = 5;
     private static final int POST_SCHEMAS_MAX_ATTEMPTS = 5;
     private static final ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
 
@@ -81,16 +84,92 @@ public final class ComputeModuleClient implements Client {
 
     @Override
     public void postResult(String jobId, InputStream result) {
+        String error = "";
+        try {
+            // Buffer the result so retries resend the full body instead of an already-consumed stream.
+            HttpRequest request = postRequest
+                    .copy()
+                    .uri(URI.create(String.format("%s/%s", EnvVars.Reserved.POST_RESULT_URI_V2.get(), jobId)))
+                    .POST(BodyPublishers.ofByteArray(result.readAllBytes()))
+                    .build();
+            for (Integer i = 0; i < POST_RESULT_MAX_ATTEMPTS; i++) {
+                try {
+                    HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+                    if (isSuccess(response)) {
+                        return;
+                    }
+                    error = new String("Failed to post result, statusCode: " + response.statusCode());
+                    log.error("Failed to post result", SafeArg.of("error", error));
+                    Thread.sleep(1000);
+                } catch (IOException e) {
+                    error = new String("Failed to post result, error: " + e.toString());
+                    log.error("Failed to post result", e);
+                }
+            }
+        } catch (Exception e) {
+            error = new String("Failed to post result, error: " + e.toString());
+            log.error("Failed to post result", e);
+        }
+        log.error(
+                "Failed to post result after several attempts. Now attempting to return the error as the result. ",
+                SafeArg.of("error", error),
+                SafeArg.of("attempts", POST_RESULT_MAX_ATTEMPTS));
+        postError(jobId, error);
+    }
+
+    private void postError(String jobId, String errorString) {
         HttpRequest request = postRequest
                 .copy()
                 .uri(URI.create(String.format("%s/%s", EnvVars.Reserved.POST_RESULT_URI_V2.get(), jobId)))
-                .POST(BodyPublishers.ofInputStream(() -> result))
+                .POST(BodyPublishers.ofString(errorString))
                 .build();
-        try {
-            client.send(request, BodyHandlers.ofString());
-        } catch (Exception e) {
-            log.error("Failed to post result", SafeArg.of("jobId", jobId), e);
+        for (Integer i = 0; i < POST_ERROR_MAX_ATTEMPTS; i++) {
+            try {
+                HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+                if (isSuccess(response)) {
+                    log.info("Successfully posted error");
+                    return;
+                }
+                log.error("Failed to post error", SafeArg.of("response", response));
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                log.error("Failed to post error", e);
+            }
         }
+    }
+
+    // The forwarder responds 202 Accepted, so treat any 2xx as success.
+    private static boolean isSuccess(HttpResponse<String> response) {
+        return response.statusCode() >= 200 && response.statusCode() < 300;
+    }
+
+    @Override
+    public void postRestart() {
+        HttpRequest request = postRequest
+                .copy()
+                .uri(URI.create("http://127.0.0.1:8946/restart-notify"))
+                .POST(BodyPublishers.ofString(""))
+                .build();
+        for (Integer i = 0; i < POST_RESTART_MAX_ATTEMPTS; i++) {
+            try {
+                HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+                if (response.statusCode() == 200) {
+                    log.warn("Successfully posted restart", UnsafeArg.of("removedJobIds", response.body()));
+                    return;
+                }
+                log.error("Failed to post restart", SafeArg.of("response", response));
+            } catch (Exception e) {
+                log.error("Failed to post restart", e);
+            }
+            try {
+                // the forwarder may not be listening yet right after container start
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+        log.error("Unable to post restart", SafeArg.of("attempts", POST_RESTART_MAX_ATTEMPTS));
     }
 
     @Override

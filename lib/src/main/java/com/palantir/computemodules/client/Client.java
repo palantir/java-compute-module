@@ -26,5 +26,7 @@ public interface Client {
 
     void postResult(String jobId, InputStream result);
 
+    void postRestart();
+
     void postSchemas(List<FunctionRunnerSchema> functionSchemas);
 }
