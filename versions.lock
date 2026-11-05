@@ -1,8 +1,8 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file. Blank lines are to minimize merge conflicts.
 
-ch.qos.logback:logback-classic:1.5.18 (1 constraints: 4105413b)
+ch.qos.logback:logback-classic:1.6.6 (1 constraints: 0f050836)
 
-ch.qos.logback:logback-core:1.5.18 (1 constraints: 400d462a)
+ch.qos.logback:logback-core:1.6.6 (1 constraints: 0e0d0e1d)
 
 com.fasterxml.jackson.core:jackson-annotations:2.22 (6 constraints: a759487c)
 
@@ -56,7 +56,7 @@ org.jetbrains:annotations:26.1.0 (3 constraints: 36269a98)
 
 org.jspecify:jspecify:1.0.1 (9 constraints: 7f8d20a8)
 
-org.slf4j:slf4j-api:2.0.17 (3 constraints: 892b1d5b)
+org.slf4j:slf4j-api:2.0.19 (3 constraints: 8b2bd15b)
 
 
 
