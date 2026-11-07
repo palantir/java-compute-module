@@ -16,7 +16,7 @@ com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.4 (1 constraints: 11
 
 com.google.code.findbugs:jsr305:3.0.2 (1 constraints: 980fcc86)
 
-com.google.errorprone:error_prone_annotations:2.52.0 (7 constraints: 906832c0)
+com.google.errorprone:error_prone_annotations:2.52.0 (7 constraints: 9268fcc1)
 
 com.google.guava:failureaccess:1.0.3 (1 constraints: 160ae3b4)
 
@@ -26,9 +26,9 @@ com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava (1 c
 
 com.google.j2objc:j2objc-annotations:3.1 (1 constraints: b809f1a0)
 
-com.palantir.conjure.java:conjure-lib:8.99.0 (1 constraints: 3e055d3b)
+com.palantir.conjure.java:conjure-lib:8.100.0 (1 constraints: 3e055d3b)
 
-com.palantir.conjure.java.api:errors:2.82.0 (1 constraints: 2410aca9)
+com.palantir.conjure.java.api:errors:2.83.0 (1 constraints: 2510afa9)
 
 com.palantir.ri:resource-identifier:2.26.0 (1 constraints: 2210a0a9)
 
